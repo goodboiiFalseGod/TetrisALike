@@ -2,86 +2,78 @@ using UnityEngine;
 
 public class Piece : MonoBehaviour
 {
-    public Board board { get; private set; }
-    public TetrominoData data { get; private set; }
-    public Vector3Int[] cells { get; private set; }
-    public Vector3Int position { get; private set; }
-    public int rotationIndex { get; private set; }
-
-    public float stepDelay = 1f;
-    public float moveDelay = 0.1f;
-    public float lockDelay = 0.5f;
+    [SerializeField] private float stepDelay = 0.75f;
+    [SerializeField] private float moveDelay = 0.05f;
+    [SerializeField] private float lockDelay = 0f;
 
     private float stepTime;
     private float moveTime;
     private float lockTime;
+    private Board _board;
+    private TetrominoData _data;
+    private Vector3Int[] _cells;
+    private Vector3Int _position;
+    private int _rotationIndex;
+
+    public Vector3Int Position { get => _position; }
+    public Vector3Int[] Cells { get => _cells; }
+    public TetrominoData PieceData { get => _data; }
 
     public void Initialize(Board board, Vector3Int position, TetrominoData data)
     {
-        this.data = data;
-        this.board = board;
-        this.position = position;
+        this._data = data;
+        this._board = board;
+        this._position = position;
 
-        rotationIndex = 0;
+        _rotationIndex = 0;
         stepTime = Time.time + stepDelay;
         moveTime = Time.time + moveDelay;
         lockTime = 0f;
 
-        if (cells == null) {
-            cells = new Vector3Int[data.cells.Length];
+        if (_cells == null) {
+            _cells = new Vector3Int[data.cells.Length];
         }
 
-        for (int i = 0; i < cells.Length; i++) {
-            cells[i] = (Vector3Int)data.cells[i];
+        for (int i = 0; i < _cells.Length; i++) {
+            _cells[i] = (Vector3Int)data.cells[i];
         }
     }
 
     private void Update()
     {
-        board.Clear(this);
-
-        // We use a timer to allow the player to make adjustments to the piece
-        // before it locks in place
+        _board.Clear(this);
         lockTime += Time.deltaTime;
 
-        // Handle rotation
         if (Input.GetKeyDown(KeyCode.Q)) {
             Rotate(-1);
         } else if (Input.GetKeyDown(KeyCode.E)) {
             Rotate(1);
         }
 
-        // Handle hard drop
         if (Input.GetKeyDown(KeyCode.Space)) {
             HardDrop();
         }
 
-        // Allow the player to hold movement keys but only after a move delay
-        // so it does not move too fast
         if (Time.time > moveTime) {
             HandleMoveInputs();
         }
 
-        // Advance the piece to the next row every x seconds
         if (Time.time > stepTime) {
             Step();
         }
 
-        board.Set(this);
+        _board.Set(this);
     }
 
     private void HandleMoveInputs()
     {
-        // Soft drop movement
         if (Input.GetKey(KeyCode.S))
         {
             if (Move(Vector2Int.down)) {
-                // Update the step time to prevent double movement
                 stepTime = Time.time + stepDelay;
             }
         }
 
-        // Left/right movement
         if (Input.GetKey(KeyCode.A)) {
             Move(Vector2Int.left);
         } else if (Input.GetKey(KeyCode.D)) {
@@ -92,14 +84,20 @@ public class Piece : MonoBehaviour
     private void Step()
     {
         stepTime = Time.time + stepDelay;
-
-        // Step down to the next row
-        Move(Vector2Int.down);
-
-        // Once the piece has been inactive for too long it becomes locked
-        if (lockTime >= lockDelay) {
+        if (!Move(Vector2Int.down))
+        {
             Lock();
         }
+    }
+
+    public void PauseGame()
+    {
+
+    }
+
+    public void ResumeGame()
+    {
+
     }
 
     private void HardDrop()
@@ -113,25 +111,23 @@ public class Piece : MonoBehaviour
 
     private void Lock()
     {
-        board.Set(this);
-        board.ClearLines();
-        board.SpawnPiece();
+        _board.Set(this);
+        _board.ClearLines();
+        _board.SpawnPiece();
     }
 
     private bool Move(Vector2Int translation)
     {
-        Vector3Int newPosition = position;
+        Vector3Int newPosition = _position;
         newPosition.x += translation.x;
         newPosition.y += translation.y;
 
-        bool valid = board.IsValidPosition(this, newPosition);
-
-        // Only save the movement if the new position is valid
+        bool valid = _board.IsValidPosition(this, newPosition);
         if (valid)
         {
-            position = newPosition;
+            _position = newPosition;
             moveTime = Time.time + moveDelay;
-            lockTime = 0f; // reset
+            lockTime = 0f;
         }
 
         return valid;
@@ -139,18 +135,12 @@ public class Piece : MonoBehaviour
 
     private void Rotate(int direction)
     {
-        // Store the current rotation in case the rotation fails
-        // and we need to revert
-        int originalRotation = rotationIndex;
-
-        // Rotate all of the cells using a rotation matrix
-        rotationIndex = Wrap(rotationIndex + direction, 0, 4);
+        int originalRotation = _rotationIndex;
+        _rotationIndex = Wrap(_rotationIndex + direction, 0, 4);
         ApplyRotationMatrix(direction);
-
-        // Revert the rotation if the wall kick tests fail
-        if (!TestWallKicks(rotationIndex, direction))
+        if (!TestWallKicks(_rotationIndex, direction))
         {
-            rotationIndex = originalRotation;
+            _rotationIndex = originalRotation;
             ApplyRotationMatrix(-direction);
         }
     }
@@ -158,19 +148,16 @@ public class Piece : MonoBehaviour
     private void ApplyRotationMatrix(int direction)
     {
         float[] matrix = Data.RotationMatrix;
-
-        // Rotate all of the cells using the rotation matrix
-        for (int i = 0; i < cells.Length; i++)
+        for (int i = 0; i < _cells.Length; i++)
         {
-            Vector3 cell = cells[i];
+            Vector3 cell = _cells[i];
 
             int x, y;
 
-            switch (data.tetromino)
+            switch (_data.tetromino)
             {
                 case Tetromino.I:
                 case Tetromino.O:
-                    // "I" and "O" are rotated from an offset center point
                     cell.x -= 0.5f;
                     cell.y -= 0.5f;
                     x = Mathf.CeilToInt((cell.x * matrix[0] * direction) + (cell.y * matrix[1] * direction));
@@ -183,7 +170,7 @@ public class Piece : MonoBehaviour
                     break;
             }
 
-            cells[i] = new Vector3Int(x, y, 0);
+            _cells[i] = new Vector3Int(x, y, 0);
         }
     }
 
@@ -191,9 +178,9 @@ public class Piece : MonoBehaviour
     {
         int wallKickIndex = GetWallKickIndex(rotationIndex, rotationDirection);
 
-        for (int i = 0; i < data.wallKicks.GetLength(1); i++)
+        for (int i = 0; i < _data.wallKicks.GetLength(1); i++)
         {
-            Vector2Int translation = data.wallKicks[wallKickIndex, i];
+            Vector2Int translation = _data.wallKicks[wallKickIndex, i];
 
             if (Move(translation)) {
                 return true;
@@ -211,7 +198,7 @@ public class Piece : MonoBehaviour
             wallKickIndex--;
         }
 
-        return Wrap(wallKickIndex, 0, data.wallKicks.GetLength(0));
+        return Wrap(wallKickIndex, 0, _data.wallKicks.GetLength(0));
     }
 
     private int Wrap(int input, int min, int max)
