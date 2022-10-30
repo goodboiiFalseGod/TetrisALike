@@ -3,3 +3,12 @@
 3. Добавить индикатор места куда приземлится фигура. + 
 4. Добавить экран GameOver с текущим счётом и рекордом. Новый рекорд экран. +
 5. Сделать анимацию разрушения линии с помощью DoTween.
+
+CustomTilemap
+1. HasTile
+2. SetTile
+3. ClearTile
+4. ClearAll
+5. Custom gameobject like tile
+6. Auto snapping
+7. Палитра gameObject, настраивается переносом объектов в массив скрипта (enum Name + gameObject)

@@ -4,14 +4,14 @@ using DG.Tweening;
 
 public class Board : MonoBehaviour
 {
-    [SerializeField] private Tilemap _tilemap;
+    [SerializeField] private CustomTilemap _tilemap;
     [SerializeField] private Piece _activePiece;
     [SerializeField] private ScoreManager _scoreManager;
     [SerializeField] private ShowNextPiece _showNextPiece;
 
     [SerializeField] private TetrominoData[] _tetrominoes;
     [SerializeField] private Vector2Int _boardSize = new Vector2Int(10, 20);
-    [SerializeField] private Vector3Int _spawnPosition = new Vector3Int(-1, 8, 0);    
+    [SerializeField] private Vector3Int _spawnPosition = new Vector3Int(-1, 8, 0);      
 
     private TetrominoData _nextPiece;
 
@@ -79,7 +79,7 @@ public class Board : MonoBehaviour
 
     public void GameOver()
     {
-        _tilemap.ClearAllTiles();
+        _tilemap.ClearAll();
         _scoreManager.GameOver();
     }
 
@@ -88,7 +88,7 @@ public class Board : MonoBehaviour
         for (int i = 0; i < piece.Cells.Length; i++)
         {
             Vector3Int tilePosition = piece.Cells[i] + piece.Position;
-            _tilemap.SetTile(tilePosition, piece.PieceData.tile);
+            _tilemap.SetTile((Vector2Int)tilePosition, _tilemap.CustomTiles[0]);
         }
     }
 
@@ -97,7 +97,7 @@ public class Board : MonoBehaviour
         for (int i = 0; i < piece.Cells.Length; i++)
         {
             Vector3Int tilePosition = piece.Cells[i] + piece.Position;
-            _tilemap.SetTile(tilePosition, null);
+            _tilemap.ClearCell((Vector2Int)tilePosition);
         }
     }
 
@@ -114,7 +114,7 @@ public class Board : MonoBehaviour
             }
 
 
-            if (_tilemap.HasTile(tilePosition)) {
+            if (_tilemap.HasTile((Vector2Int)tilePosition)) {
                 return false;
             }
         }
@@ -122,7 +122,7 @@ public class Board : MonoBehaviour
         return true;
     }
 
-    public void ClearLines()
+    public void CheckAndClearLines()
     {
         RectInt bounds = Bounds;
         int row = bounds.yMin;
@@ -131,7 +131,7 @@ public class Board : MonoBehaviour
         while (row < bounds.yMax)
         {
             if (IsLineFull(row)) {
-                LineClear(row);
+                ClearLine(row);
                 linesCleared++;
             } else {
                 row++;
@@ -149,7 +149,7 @@ public class Board : MonoBehaviour
         {
             Vector3Int position = new Vector3Int(column, row, 0);
 
-            if (!_tilemap.HasTile(position)) {
+            if (!_tilemap.HasTile((Vector2Int)position)) {
                 return false;
             }
         }
@@ -157,25 +157,30 @@ public class Board : MonoBehaviour
         return true;
     }
 
-    public void LineClear(int row)
+    public void ClearLine(int row)
     {
-        RectInt bounds = Bounds;
-
-        for (int col = bounds.xMin; col < bounds.xMax; col++)
+        for (int col = _tilemap.Size.xMin; col < _tilemap.Size.xMax; col++)
         {
-            Vector3Int position = new Vector3Int(col, row, 0);
-            _tilemap.SetTile(position, null);
+            Vector2Int position = new Vector2Int(col, row);
+            _tilemap.ClearCell(position);
         }
 
-        while (row < bounds.yMax)
+        while (row < _tilemap.Size.yMax)
         {
-            for (int col = bounds.xMin; col < bounds.xMax; col++)
+            for (int col = _tilemap.Size.xMin; col < _tilemap.Size.xMax; col++)
             {
-                Vector3Int position = new Vector3Int(col, row + 1, 0);
-                TileBase above = _tilemap.GetTile(position);
+                Vector2Int position = new Vector2Int(col, row + 1);
 
-                position = new Vector3Int(col, row, 0);
-                _tilemap.SetTile(position, above);
+                if(_tilemap.HasTile(position))
+                {
+                    position = new Vector2Int(col, row);
+                    _tilemap.SetTile(position, _tilemap.CustomTiles[0]);
+                }
+                else
+                {
+                    position = new Vector2Int(col, row);
+                    _tilemap.ClearCell(position);
+                }
             }
 
             row++;

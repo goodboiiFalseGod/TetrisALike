@@ -15,6 +15,7 @@ public class ScoreManager : MonoBehaviour
     {
         _scoreValue = 0;
         UpdateScoreText();
+        PlayerPrefs.DeleteAll();
 
         if(!PlayerPrefs.HasKey(_playerPrefsKey))
         {

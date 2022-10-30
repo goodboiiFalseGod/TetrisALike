@@ -15,13 +15,17 @@ public class HighscoreScreen : MonoBehaviour
     {
         _textPart3.text = PlayerPrefs.GetInt("HighScore").ToString();
 
-        _textPart1.DOFade(0f, 0f);
-        _textPart2.DOFade(0f, 0f);
-        _textPart2.DOFade(0f, 0f);       
+        Sequence sequence = DOTween.Sequence(); 
 
-        _textPart1.DOFade(1f, 4f);
-        _textPart2.DOFade(1f, 4f);
-        _textPart2.DOFade(1f, 4f).OnComplete(() => _animationOver = true);
+        sequence.Join(_textPart1.DOFade(0f, 0f));
+        sequence.Join(_textPart2.DOFade(0f, 0f));
+        sequence.Join(_textPart3.DOFade(0f, 0f));
+
+        sequence.Join(_textPart1.DOFade(1f, 4f));
+        sequence.Join(_textPart2.DOFade(1f, 4f));
+        sequence.Join(_textPart3.DOFade(1f, 4f));
+
+        sequence.OnComplete(() => _animationOver = true);
     }
 
     private void Update()
