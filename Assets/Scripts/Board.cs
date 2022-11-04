@@ -1,6 +1,9 @@
 using UnityEngine;
 using UnityEngine.Tilemaps;
 using DG.Tweening;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 
 public class Board : MonoBehaviour
 {
@@ -11,7 +14,9 @@ public class Board : MonoBehaviour
 
     [SerializeField] private TetrominoData[] _tetrominoes;
     [SerializeField] private Vector2Int _boardSize = new Vector2Int(10, 20);
-    [SerializeField] private Vector3Int _spawnPosition = new Vector3Int(-1, 8, 0);      
+    [SerializeField] private Vector3Int _spawnPosition = new Vector3Int(-1, 8, 0);
+
+    private List<Vector2Int> _activePieceCells = new List<Vector2Int>();
 
     private TetrominoData _nextPiece;
 
@@ -85,10 +90,12 @@ public class Board : MonoBehaviour
 
     public void Set(Piece piece)
     {
+        _activePieceCells.Clear();
         for (int i = 0; i < piece.Cells.Length; i++)
         {
             Vector3Int tilePosition = piece.Cells[i] + piece.Position;
             _tilemap.SetTile((Vector2Int)tilePosition, _tilemap.CustomTiles[0]);
+            _activePieceCells.Add((Vector2Int)tilePosition);
         }
     }
 
@@ -125,20 +132,23 @@ public class Board : MonoBehaviour
     public void CheckAndClearLines()
     {
         RectInt bounds = Bounds;
-        int row = bounds.yMin;
         int linesCleared = 0;
+        List<int> toClear = new List<int>();
 
-        while (row < bounds.yMax)
+        for (int row = bounds.yMin; row <= bounds.yMax; row++)
         {
-            if (IsLineFull(row)) {
-                ClearLine(row);
+            if (IsLineFull(row))
+            {
+                toClear.Add(row);
                 linesCleared++;
-            } else {
-                row++;
             }
         }
 
-        _scoreManager.AddScore(linesCleared);
+        if(linesCleared > 0)
+        {
+            AnimateClear(toClear);
+            _scoreManager.AddScore(linesCleared);
+        }
     }
 
     public bool IsLineFull(int row)
@@ -157,21 +167,72 @@ public class Board : MonoBehaviour
         return true;
     }
 
-    public void ClearLine(int row)
+    public void AnimateClear(List<int> rows)
     {
-        for (int col = _tilemap.Size.xMin; col < _tilemap.Size.xMax; col++)
+        Sequence sequence = DOTween.Sequence();
+
+        foreach(int r in rows)
         {
-            Vector2Int position = new Vector2Int(col, row);
-            _tilemap.ClearCell(position);
+            for (int col = _tilemap.Size.xMin; col < _tilemap.Size.xMax; col++)
+            {
+                Vector2Int position = new Vector2Int(col, r);
+                sequence.Join(_tilemap.GetTile(position).GetComponent<SpriteRenderer>().DOFade(0f, 0.5f));
+            }
         }
+
+        int row = rows.Min();
+
+        /*while (row < _tilemap.Size.yMax)
+        {
+            for (int col = _tilemap.Size.xMin; col < _tilemap.Size.xMax; col++)
+            {
+                Vector2Int position = new Vector2Int(col, row + rows.Count);
+
+                if (_activePieceCells.Contains(position))
+                {
+                    continue;
+                }
+
+                if (_tilemap.HasTile(position))
+                {
+                    Vector3 targetPosition = _tilemap.GetTile(position).transform.position + Vector3.down * (rows.Count - 1);
+                    Vector2Int newPosition = new Vector2Int(col, row);
+                    sequence.Join(_tilemap.GetTile(position).transform.DOMove(targetPosition, 0.5f));
+                }   
+            }
+
+            row++;
+        }*/
+
+        sequence.OnComplete(() => ClearLine(rows));
+    }
+
+
+    public void ClearLine(List<int> rows)
+    {
+        foreach(int r in rows)
+        {
+            for (int col = _tilemap.Size.xMin; col < _tilemap.Size.xMax; col++)
+            {
+                Vector2Int position = new Vector2Int(col, r);
+                _tilemap.ClearCell(position);
+            }
+        }
+
+        int row = rows.Min();
 
         while (row < _tilemap.Size.yMax)
         {
             for (int col = _tilemap.Size.xMin; col < _tilemap.Size.xMax; col++)
             {
-                Vector2Int position = new Vector2Int(col, row + 1);
+                Vector2Int position = new Vector2Int(col, row + rows.Count);
 
-                if(_tilemap.HasTile(position))
+                if(_activePieceCells.Contains(position))
+                {
+                    continue;
+                }
+
+                if (_tilemap.HasTile(position))
                 {
                     position = new Vector2Int(col, row);
                     _tilemap.SetTile(position, _tilemap.CustomTiles[0]);

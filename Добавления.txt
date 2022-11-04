@@ -12,3 +12,11 @@ CustomTilemap
 5. Custom gameobject like tile
 6. Auto snapping
 7. Палитра gameObject, настраивается переносом объектов в массив скрипта (enum Name + gameObject)
+
+1.Each tetramino customize by ScriptableObject.
+2.CustomTilemap autoSnapping 
+3.Editor for pieces
+4.Logic for custom pieces
+
+
+Проблема в одновременном но асинхронном срабатывании ClearLines. Нужно вызывать ClearLine после всех анимаций.
