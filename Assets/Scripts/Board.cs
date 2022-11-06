@@ -135,7 +135,7 @@ public class Board : MonoBehaviour
         int linesCleared = 0;
         List<int> toClear = new List<int>();
 
-        for (int row = bounds.yMin; row <= bounds.yMax; row++)
+        for (int row = bounds.yMax; row >= bounds.yMin; row--)
         {
             if (IsLineFull(row))
             {
@@ -180,28 +180,31 @@ public class Board : MonoBehaviour
             }
         }
 
-        int row = rows.Min();
-
-        /*while (row < _tilemap.Size.yMax)
+        /*for (int i = 0; i < rows.Count; i++)
         {
-            for (int col = _tilemap.Size.xMin; col < _tilemap.Size.xMax; col++)
-            {
-                Vector2Int position = new Vector2Int(col, row + rows.Count);
+            int row = rows[i];
 
-                if (_activePieceCells.Contains(position))
+            while (row < _tilemap.Size.yMax)
+            {
+                for (int col = _tilemap.Size.xMin; col < _tilemap.Size.xMax; col++)
                 {
-                    continue;
+                    Vector2Int position = new Vector2Int(col, row + 1);
+
+                    if (_activePieceCells.Contains(position))
+                    {
+                        continue;
+                    }
+
+                    if (_tilemap.HasTile(position))
+                    {
+                        Vector3 targetPosition = _tilemap.GetTile(position).transform.position + Vector3.down * (rows.Count - 1);
+                        Vector2Int newPosition = new Vector2Int(col, row);
+                        sequence.Join(_tilemap.GetTile(position).transform.DOMove(targetPosition, 0.5f));
+                    }
                 }
 
-                if (_tilemap.HasTile(position))
-                {
-                    Vector3 targetPosition = _tilemap.GetTile(position).transform.position + Vector3.down * (rows.Count - 1);
-                    Vector2Int newPosition = new Vector2Int(col, row);
-                    sequence.Join(_tilemap.GetTile(position).transform.DOMove(targetPosition, 0.5f));
-                }   
+                row++;
             }
-
-            row++;
         }*/
 
         sequence.OnComplete(() => ClearLine(rows));
@@ -219,33 +222,37 @@ public class Board : MonoBehaviour
             }
         }
 
-        int row = rows.Min();
-
-        while (row < _tilemap.Size.yMax)
+        for(int i = 0; i < rows.Count; i++)
         {
-            for (int col = _tilemap.Size.xMin; col < _tilemap.Size.xMax; col++)
+            int row = rows[i];
+
+            while (row < _tilemap.Size.yMax)
             {
-                Vector2Int position = new Vector2Int(col, row + rows.Count);
+                for (int col = _tilemap.Size.xMin; col < _tilemap.Size.xMax; col++)
+                {
+                    Vector2Int position = new Vector2Int(col, row + 1);
 
-                if(_activePieceCells.Contains(position))
-                {
-                    continue;
+                    if (_activePieceCells.Contains(position))
+                    {
+                        continue;
+                    }
+
+                    if (_tilemap.HasTile(position))
+                    {
+                        position = new Vector2Int(col, row);
+                        _tilemap.SetTile(position, _tilemap.CustomTiles[0]);
+                    }
+                    else
+                    {
+                        position = new Vector2Int(col, row);
+                        _tilemap.ClearCell(position);
+                    }
                 }
 
-                if (_tilemap.HasTile(position))
-                {
-                    position = new Vector2Int(col, row);
-                    _tilemap.SetTile(position, _tilemap.CustomTiles[0]);
-                }
-                else
-                {
-                    position = new Vector2Int(col, row);
-                    _tilemap.ClearCell(position);
-                }
+                row++;
             }
-
-            row++;
         }
+
     }
 
 }
