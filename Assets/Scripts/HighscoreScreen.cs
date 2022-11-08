@@ -21,9 +21,9 @@ public class HighscoreScreen : MonoBehaviour
         sequence.Join(_textPart2.DOFade(0f, 0f));
         sequence.Join(_textPart3.DOFade(0f, 0f));
 
-        sequence.Join(_textPart1.DOFade(1f, 4f));
-        sequence.Join(_textPart2.DOFade(1f, 4f));
-        sequence.Join(_textPart3.DOFade(1f, 4f));
+        sequence.Join(_textPart1.DOFade(1f, 2f));
+        sequence.Join(_textPart2.DOFade(1f, 2f));
+        sequence.Join(_textPart3.DOFade(1f, 2f));
 
         sequence.OnComplete(() => _animationOver = true);
     }

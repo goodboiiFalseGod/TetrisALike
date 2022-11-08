@@ -36,13 +36,13 @@ public class Ghost : MonoBehaviour
     private void Copy()
     {
         for (int i = 0; i < cells.Length; i++) {
-            cells[i] = _trackingPiece.Cells[i];
+            cells[i] = (Vector3Int)_trackingPiece.Cells[i];
         }
     }
 
     private void Drop()
     {
-        Vector3Int position = _trackingPiece.Position;
+        Vector3Int position = (Vector3Int)_trackingPiece.Position;
 
         int current = position.y;
         int bottom = -_mainBoard.BoardSize.y / 2 - 1;
@@ -53,7 +53,7 @@ public class Ghost : MonoBehaviour
         {
             position.y = row;
 
-            if (_mainBoard.IsValidPosition(_trackingPiece, position)) {
+            if (_mainBoard.IsValidPosition(_trackingPiece, (Vector2Int)position)) {
                 this.position = position;
             } else {
                 break;

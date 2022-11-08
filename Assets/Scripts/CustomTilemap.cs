@@ -5,7 +5,6 @@ using UnityEngine;
 
 public class CustomTilemap : MonoBehaviour
 {
-    [SerializeField] public GameObject[] CustomTiles;
     [SerializeField] public RectInt Size;
 
     [SerializeField] private Dictionary<Vector2Int,Cell> _cells = new Dictionary<Vector2Int,Cell>();
@@ -71,6 +70,11 @@ public class CustomTilemap : MonoBehaviour
         return _cells[cell].SetTile(tile);
     }
 
+    public bool ReplaceTile(Vector2Int cell, GameObject tile)
+    {
+        return _cells[cell].ReplaceTile(tile);
+    }
+
     public bool TransferCell(Vector2Int from, Vector2Int to)
     {
         if (!IsInbound(to) || !IsInbound(from))
@@ -83,7 +87,7 @@ public class CustomTilemap : MonoBehaviour
             return false;
         }
 
-        if (_cells[to].SetTile(CustomTiles[0]))
+        if (_cells[to].SetTile(GetTile(from)))
         {
             _cells[from].ClearTile();
         }

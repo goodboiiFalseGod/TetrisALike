@@ -6,21 +6,19 @@ using UnityEngine.UI;
 
 public class ShowNextPiece : MonoBehaviour
 {
-    [SerializeField] private Text _nextPieceText;
     [SerializeField] private Board _mainBoard;
-    [SerializeField] private Tilemap _tilemap;
+    [SerializeField] private CustomTilemap _tilemap;
 
-    private Vector3Int[] _cells;
+    private Vector2Int[] _cells;
 
     public void UpdatePreview()
     {
-        _nextPieceText.text = _mainBoard.NextPiece.tetromino.ToString();
-        _cells = new Vector3Int[_mainBoard.NextPiece.cells.Length];
-        _tilemap.ClearAllTiles();
+        _cells = new Vector2Int[_mainBoard.NextPiece.Cells.Length];
+        _tilemap.ClearAll();
 
-        for(int i = 0; i < _mainBoard.NextPiece.cells.Length; i++)
+        for(int i = 0; i < _mainBoard.NextPiece.Cells.Length; i++)
         {
-            _cells[i] = (Vector3Int)_mainBoard.NextPiece.cells[i];
+            _cells[i] = _mainBoard.NextPiece.Cells[i];
         }
 
         Set();
@@ -30,8 +28,8 @@ public class ShowNextPiece : MonoBehaviour
     {
         for (int i = 0; i < _cells.Length; i++)
         {
-            Vector3Int tilePosition = _cells[i];
-            _tilemap.SetTile(tilePosition, _mainBoard.NextPiece.tile);
+            Vector2Int tilePosition = _cells[i];
+            _tilemap.SetTile(tilePosition, _mainBoard.NextPiece.Tile);
         }
     }
 }

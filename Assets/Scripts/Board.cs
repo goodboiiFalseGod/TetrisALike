@@ -12,15 +12,15 @@ public class Board : MonoBehaviour
     [SerializeField] private ScoreManager _scoreManager;
     [SerializeField] private ShowNextPiece _showNextPiece;
 
-    [SerializeField] private TetrominoData[] _tetrominoes;
+    [SerializeField] private PieceData[] _tetrominoes;
     [SerializeField] private Vector2Int _boardSize = new Vector2Int(10, 20);
-    [SerializeField] private Vector3Int _spawnPosition = new Vector3Int(-1, 8, 0);
+    [SerializeField] private Vector2Int _spawnPosition = new Vector2Int(-1, 8);
 
     private List<Vector2Int> _activePieceCells = new List<Vector2Int>();
 
-    private TetrominoData _nextPiece;
+    private PieceData _nextPiece;
 
-    public TetrominoData NextPiece { get => _nextPiece; }
+    public PieceData NextPiece { get => _nextPiece; }
 
     public Vector2Int BoardSize { get => _boardSize; }
 
@@ -32,13 +32,6 @@ public class Board : MonoBehaviour
         }
     }
 
-    private void Awake()
-    {
-        for (int i = 0; i < _tetrominoes.Length; i++) {
-            _tetrominoes[i].Initialize();
-        }
-    }
-
     private void Start()
     {
         SpawnPiece(ChooseNextPiece());
@@ -46,10 +39,10 @@ public class Board : MonoBehaviour
         _showNextPiece.UpdatePreview();
     }
 
-    public TetrominoData ChooseNextPiece()
+    public PieceData ChooseNextPiece()
     {
         int random = Random.Range(0, _tetrominoes.Length);
-        TetrominoData data = _tetrominoes[random];
+        PieceData data = _tetrominoes[random];
 
         return data;
     }
@@ -68,7 +61,7 @@ public class Board : MonoBehaviour
         _showNextPiece.UpdatePreview();
     }
 
-    public void SpawnPiece(TetrominoData data)
+    public void SpawnPiece(PieceData data)
     {
         _activePiece.Initialize(this, _spawnPosition, data);
 
@@ -93,8 +86,8 @@ public class Board : MonoBehaviour
         _activePieceCells.Clear();
         for (int i = 0; i < piece.Cells.Length; i++)
         {
-            Vector3Int tilePosition = piece.Cells[i] + piece.Position;
-            _tilemap.SetTile((Vector2Int)tilePosition, _tilemap.CustomTiles[0]);
+            Vector2Int tilePosition = piece.Cells[i] + piece.Position;
+            _tilemap.SetTile((Vector2Int)tilePosition, piece.PieceData.Tile);
             _activePieceCells.Add((Vector2Int)tilePosition);
         }
     }
@@ -103,18 +96,18 @@ public class Board : MonoBehaviour
     {
         for (int i = 0; i < piece.Cells.Length; i++)
         {
-            Vector3Int tilePosition = piece.Cells[i] + piece.Position;
+            Vector2Int tilePosition = piece.Cells[i] + piece.Position;
             _tilemap.ClearCell((Vector2Int)tilePosition);
         }
     }
 
-    public bool IsValidPosition(Piece piece, Vector3Int position)
+    public bool IsValidPosition(Piece piece, Vector2Int position)
     {
         RectInt bounds = Bounds;
 
         for (int i = 0; i < piece.Cells.Length; i++)
         {
-            Vector3Int tilePosition = piece.Cells[i] + position;
+            Vector2Int tilePosition = piece.Cells[i] + position;
 
             if (!bounds.Contains((Vector2Int)tilePosition)) {
                 return false;
@@ -180,49 +173,13 @@ public class Board : MonoBehaviour
             }
         }
 
-        /*for (int i = 0; i < rows.Count; i++)
-        {
-            int row = rows[i];
-
-            while (row < _tilemap.Size.yMax)
-            {
-                for (int col = _tilemap.Size.xMin; col < _tilemap.Size.xMax; col++)
-                {
-                    Vector2Int position = new Vector2Int(col, row + 1);
-
-                    if (_activePieceCells.Contains(position))
-                    {
-                        continue;
-                    }
-
-                    if (_tilemap.HasTile(position))
-                    {
-                        Vector3 targetPosition = _tilemap.GetTile(position).transform.position + Vector3.down * (rows.Count - 1);
-                        Vector2Int newPosition = new Vector2Int(col, row);
-                        sequence.Join(_tilemap.GetTile(position).transform.DOMove(targetPosition, 0.5f));
-                    }
-                }
-
-                row++;
-            }
-        }*/
-
         sequence.OnComplete(() => ClearLine(rows));
     }
 
 
     public void ClearLine(List<int> rows)
     {
-        foreach(int r in rows)
-        {
-            for (int col = _tilemap.Size.xMin; col < _tilemap.Size.xMax; col++)
-            {
-                Vector2Int position = new Vector2Int(col, r);
-                _tilemap.ClearCell(position);
-            }
-        }
-
-        for(int i = 0; i < rows.Count; i++)
+        for (int i = 0; i < rows.Count; i++)
         {
             int row = rows[i];
 
@@ -239,8 +196,9 @@ public class Board : MonoBehaviour
 
                     if (_tilemap.HasTile(position))
                     {
-                        position = new Vector2Int(col, row);
-                        _tilemap.SetTile(position, _tilemap.CustomTiles[0]);
+                        Vector2Int newPosition = new Vector2Int(col, row);
+                        _tilemap.ReplaceTile(newPosition, _tilemap.GetTile(position));
+                        _tilemap.ClearCell(position);
                     }
                     else
                     {
@@ -252,6 +210,15 @@ public class Board : MonoBehaviour
                 row++;
             }
         }
+
+        /*foreach (int r in rows)
+        {
+            for (int col = _tilemap.Size.xMin; col < _tilemap.Size.xMax; col++)
+            {
+                Vector2Int position = new Vector2Int(col, r);
+                _tilemap.ClearCell(position);
+            }
+        }*/
 
     }
 
