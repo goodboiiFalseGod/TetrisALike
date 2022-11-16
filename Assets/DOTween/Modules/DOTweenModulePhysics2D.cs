@@ -107,7 +107,7 @@ namespace DG.Tweening
         /// <param name="path">The waypoints to go through</param>
         /// <param name="duration">The duration of the tween</param>
         /// <param name="pathType">The type of path: Linear (straight path), CatmullRom (curved CatmullRom path) or CubicBezier (curved with control points)</param>
-        /// <param name="pathMode">The path mode: 3D, side-scroller 2D, top-down 2D</param>
+        /// <param name="pathMode">The path mode: 3D, side-scroller 2D, _top-down 2D</param>
         /// <param name="resolution">The resolution of the path (useless in case of Linear paths): higher resolutions make for more detailed curved paths but are more expensive.
         /// Defaults to 10, but a value of 5 is usually enough if you don't have dramatic long curves between waypoints</param>
         /// <param name="gizmoColor">The color of the path (shown when gizmos are active in the Play panel and the tween is running)</param>
@@ -135,7 +135,7 @@ namespace DG.Tweening
         /// <param name="path">The waypoint to go through</param>
         /// <param name="duration">The duration of the tween</param>
         /// <param name="pathType">The type of path: Linear (straight path), CatmullRom (curved CatmullRom path) or CubicBezier (curved with control points)</param>
-        /// <param name="pathMode">The path mode: 3D, side-scroller 2D, top-down 2D</param>
+        /// <param name="pathMode">The path mode: 3D, side-scroller 2D, _top-down 2D</param>
         /// <param name="resolution">The resolution of the path: higher resolutions make for more detailed curved paths but are more expensive.
         /// Defaults to 10, but a value of 5 is usually enough if you don't have dramatic long curves between waypoints</param>
         /// <param name="gizmoColor">The color of the path (shown when gizmos are active in the Play panel and the tween is running)</param>

@@ -30,9 +30,7 @@ public class Piece : MonoBehaviour
         moveTime = Time.time + moveDelay;
         lockTime = 0f;
 
-        if (_cells == null) {
-            _cells = new Vector2Int[data.Cells.Length];
-        }
+        _cells = new Vector2Int[data.Cells.Length];
 
         for (int i = 0; i < _cells.Length; i++) {
             _cells[i] = data.Cells[i];
@@ -154,7 +152,7 @@ public class Piece : MonoBehaviour
 
             int x, y;
 
-            if(_data.IsCentrified)
+            if(!_data.IsCentrified)
             {
                 x = Mathf.RoundToInt((cell.x * matrix[0] * direction) + (cell.y * matrix[1] * direction));
                 y = Mathf.RoundToInt((cell.x * matrix[2] * direction) + (cell.y * matrix[3] * direction));
@@ -173,9 +171,9 @@ public class Piece : MonoBehaviour
 
     private bool TestWallKicks(Vector2Int[] cells, int rotationIndex, int rotationDirection)
     {
-        List<Vector2Int> wallkicks = PieceData.CalculateWallkicks(cells, rotationIndex, rotationDirection);
+        Vector2Int[] wallkicks = _data.Wallkicks;
 
-        for (int i = 0; i < wallkicks.Count; i++)
+        for (int i = 0; i < wallkicks.Length; i++)
         {
             Vector2Int translation = wallkicks[i];
 
@@ -186,35 +184,6 @@ public class Piece : MonoBehaviour
 
         return false;
     }
-
-    /*private bool TestWallKicks(int rotationIndex, int rotationDirection)
-    {
-        int wallKickIndex = GetWallKickIndex(rotationIndex, rotationDirection);
-
-        for (int i = 0; i < _data.WallKicks.GetLength(1); i++)
-        {
-            Vector2Int translation = _data.WallKicks[wallKickIndex][i];
-
-            if (Move(translation))
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    private int GetWallKickIndex(int rotationIndex, int rotationDirection)
-    {
-        int wallKickIndex = rotationIndex * 2;
-
-        if (rotationDirection < 0)
-        {
-            wallKickIndex--;
-        }
-
-        return Wrap(wallKickIndex, 0, _data.WallKicks.GetLength(0));
-    }*/
 
     private int Wrap(int input, int min, int max)
     {

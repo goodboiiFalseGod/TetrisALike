@@ -14,7 +14,8 @@ public class Board : MonoBehaviour
 
     [SerializeField] private PieceData[] _tetrominoes;
     [SerializeField] private Vector2Int _boardSize = new Vector2Int(10, 20);
-    [SerializeField] private Vector2Int _spawnPosition = new Vector2Int(-1, 8);
+
+    private Vector2Int _top;
 
     private List<Vector2Int> _activePieceCells = new List<Vector2Int>();
 
@@ -34,6 +35,7 @@ public class Board : MonoBehaviour
 
     private void Start()
     {
+        _top = new Vector2Int(-Bounds.xMax / 2 + 1, Bounds.yMax);
         SpawnPiece(ChooseNextPiece());
         _nextPiece = ChooseNextPiece();
         _showNextPiece.UpdatePreview();
@@ -49,9 +51,9 @@ public class Board : MonoBehaviour
 
     public void SpawnPiece()
     {
-        _activePiece.Initialize(this, _spawnPosition, _nextPiece);
+        _activePiece.Initialize(this, _nextPiece.SpawnPositionOffset + _top, _nextPiece);
 
-        if (IsValidPosition(_activePiece, _spawnPosition)) {
+        if (IsValidPosition(_activePiece, _nextPiece.SpawnPositionOffset + _top)) {
             Set(_activePiece);
         } else {
             GameOver();
@@ -63,9 +65,9 @@ public class Board : MonoBehaviour
 
     public void SpawnPiece(PieceData data)
     {
-        _activePiece.Initialize(this, _spawnPosition, data);
+        _activePiece.Initialize(this, data.SpawnPositionOffset + _top, data);
 
-        if (IsValidPosition(_activePiece, _spawnPosition))
+        if (IsValidPosition(_activePiece, data.SpawnPositionOffset + _top))
         {
             Set(_activePiece);
         }

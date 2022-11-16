@@ -35,6 +35,7 @@ public class Ghost : MonoBehaviour
 
     private void Copy()
     {
+        cells = new Vector3Int[_trackingPiece.Cells.Length];
         for (int i = 0; i < cells.Length; i++) {
             cells[i] = (Vector3Int)_trackingPiece.Cells[i];
         }

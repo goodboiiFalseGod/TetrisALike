@@ -13,9 +13,3 @@ MonoBehaviour:
   m_Name: L
   m_EditorClassIdentifier: 
   _tile: {fileID: 4233394936600447652, guid: 22c2fbd9fa3069447a6c4c93be285397, type: 3}
-  _isCentrified: 0
-  _cells:
-  - {x: 1, y: 1}
-  - {x: -1, y: 0}
-  - {x: 0, y: 0}
-  - {x: 1, y: 0}
