@@ -6,10 +6,10 @@ using UnityEngine;
 public class PieceData : ScriptableObject
 {
     [SerializeField] private GameObject _tile;
-    private bool _isCentrified;
-    private Vector2Int[] _cells;
-    private Vector2Int _spawnPositionOffset;
-    private Vector2Int[] _wallkicks;
+    [SerializeField] private bool _isCentrified;
+    [SerializeField] private Vector2Int[] _cells;
+    [SerializeField] private Vector2Int _spawnPositionOffset;
+    [SerializeField] private Vector2Int[] _wallkicks;
 
     public Vector2Int SpawnPositionOffset { get => _spawnPositionOffset; }
     public bool IsCentrified { get { return _isCentrified; } }
@@ -17,14 +17,13 @@ public class PieceData : ScriptableObject
     public Vector2Int[] Cells { get => _cells; }
     public Vector2Int[] Wallkicks { get => _wallkicks; }
 
-    public void UpdateData(GameObject tile, Vector2Int[] cells, string name)
+    public void UpdateData(GameObject tile, Vector2Int[] cells)
     {
         _cells = Centralize(cells);
         _tile = tile;
         _isCentrified = CheckIsCentrified(cells);
         _wallkicks = CalculateWallkicks(cells).ToArray();
         _spawnPositionOffset = CalculateSpawnPositionOffset(cells);
-        this.name = name;
     }
 
     private static List<Vector2Int> CalculateWallkicks(Vector2Int[] cells)

@@ -13,3 +13,28 @@ MonoBehaviour:
   m_Name: Z
   m_EditorClassIdentifier: 
   _tile: {fileID: 8481736722873158433, guid: 8120467f2d995b94eb8880b25ad40ca0, type: 3}
+  _isCentrified: 0
+  _cells:
+  - {x: -1, y: 1}
+  - {x: 0, y: 0}
+  - {x: 0, y: 1}
+  - {x: 1, y: 0}
+  _spawnPositionOffset: {x: 0, y: -2}
+  _wallkicks:
+  - {x: 0, y: 0}
+  - {x: 0, y: 0}
+  - {x: 0, y: 0}
+  - {x: 1, y: 0}
+  - {x: -1, y: 0}
+  - {x: 1, y: 0}
+  - {x: -1, y: 0}
+  - {x: 1, y: 0}
+  - {x: -1, y: 0}
+  - {x: 0, y: -1}
+  - {x: 0, y: 1}
+  - {x: 2, y: 0}
+  - {x: -2, y: 0}
+  - {x: 2, y: -1}
+  - {x: -2, y: 1}
+  - {x: 2, y: 1}
+  - {x: -2, y: 1}

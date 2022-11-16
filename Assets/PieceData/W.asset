@@ -12,4 +12,30 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 750041f85ec87b64e8544eb8335cb402, type: 3}
   m_Name: W
   m_EditorClassIdentifier: 
-  _tile: {fileID: 0}
+  _tile: {fileID: 8744168783209985288, guid: beb4a2290a291324ba10998d2ace0dff, type: 3}
+  _isCentrified: 0
+  _cells:
+  - {x: -1, y: 0}
+  - {x: -1, y: 1}
+  - {x: 0, y: -1}
+  - {x: 0, y: 0}
+  - {x: 1, y: -1}
+  _spawnPositionOffset: {x: 0, y: -2}
+  _wallkicks:
+  - {x: 0, y: 0}
+  - {x: 0, y: 0}
+  - {x: 0, y: 0}
+  - {x: 1, y: 0}
+  - {x: -1, y: 0}
+  - {x: 1, y: 0}
+  - {x: -1, y: 0}
+  - {x: 1, y: 0}
+  - {x: -1, y: 0}
+  - {x: 0, y: -1}
+  - {x: 0, y: 1}
+  - {x: 2, y: 0}
+  - {x: -2, y: 0}
+  - {x: 2, y: -1}
+  - {x: -2, y: 1}
+  - {x: 2, y: 1}
+  - {x: -2, y: 1}

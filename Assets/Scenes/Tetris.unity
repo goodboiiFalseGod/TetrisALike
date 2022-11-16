@@ -1259,8 +1259,8 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 840de0b6111bcfc40bed6f976fcca88a, type: 2}
   - {fileID: 11400000, guid: 6325d598216fa4641a67aeb43a31926e, type: 2}
   - {fileID: 11400000, guid: 4a748fbd2a1aadd4cb7f3be4f89beade, type: 2}
+  - {fileID: 11400000, guid: a57197519cbf9d14196e701ebbaa1185, type: 2}
   _boardSize: {x: 10, y: 20}
-  _spawnPosition: {x: -1, y: 8}
 --- !u!1 &2144466704
 GameObject:
   m_ObjectHideFlags: 0

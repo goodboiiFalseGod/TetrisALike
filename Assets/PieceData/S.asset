@@ -13,3 +13,28 @@ MonoBehaviour:
   m_Name: S
   m_EditorClassIdentifier: 
   _tile: {fileID: 1277169868687646066, guid: a7c3b9bf12d04f548b56a055d9a7c2ed, type: 3}
+  _isCentrified: 0
+  _cells:
+  - {x: -1, y: 0}
+  - {x: 0, y: 0}
+  - {x: 0, y: 1}
+  - {x: 1, y: 1}
+  _spawnPositionOffset: {x: 0, y: -2}
+  _wallkicks:
+  - {x: 0, y: 0}
+  - {x: 0, y: -1}
+  - {x: 0, y: 1}
+  - {x: 1, y: 0}
+  - {x: -1, y: 0}
+  - {x: 1, y: -1}
+  - {x: -1, y: -1}
+  - {x: 1, y: 1}
+  - {x: -1, y: 1}
+  - {x: 0, y: -2}
+  - {x: 0, y: 2}
+  - {x: 2, y: 0}
+  - {x: -2, y: 0}
+  - {x: 2, y: -2}
+  - {x: -2, y: 0}
+  - {x: 2, y: 2}
+  - {x: -2, y: 2}

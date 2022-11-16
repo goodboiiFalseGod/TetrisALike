@@ -20,7 +20,10 @@ public class PiecesEditorWindow : EditorWindow
     void OnGUI()
     {
         _pieceData = EditorGUILayout.ObjectField("PieceData", _pieceData, typeof(PieceData), false) as PieceData;
-        _name = EditorGUILayout.TextField("Piece name",_name);
+        if(_pieceData == null)
+        {
+            _name = EditorGUILayout.TextField("Piece name", _name);
+        }        
         _tile = EditorGUILayout.ObjectField("Tile", _tile, typeof(GameObject), false) as GameObject;
 
         int boolOffsetX = _cellsBool.GetLength(0) / 2;
@@ -56,32 +59,46 @@ public class PiecesEditorWindow : EditorWindow
             }
         }
 
-        if (GUI.Button(new Rect(off - 4f, off * _cellsBool.GetLength(1) + topOffset * 2, off * 5, off), "Save"))
+        if (GUI.Button(new Rect(off * 11, off * _cellsBool.GetLength(1) + topOffset * 2.2f, off * 5, off), "Clear"))
         {
-            if(_pieceData != null)
+            _pieceData = null;
+            _tile = null;
+            _name = string.Empty;
+            ClearCellBool();
+        }
+
+        if(_pieceData != null)
+        {
+            if (GUI.Button(new Rect(off - 4f, off * _cellsBool.GetLength(1) + topOffset * 2.2f, off * 5, off), "Save"))
             {
-                AssetDatabase.RenameAsset("Assets/PieceData/" + name + ".asset", _name + ".asset");
-                _pieceData.UpdateData(_tile, Vector2IntFromBools(_cellsBool), _name);
-                ClearCellBool();
-                _saved = true;
+                if (_pieceData != null)
+                {
+                    _pieceData.UpdateData(_tile, Vector2IntFromBools(_cellsBool));
+                    ClearCellBool();
+                    _saved = true;
+                }
             }
         }
 
-        if (GUI.Button(new Rect(off - 4f, off * _cellsBool.GetLength(1) + topOffset * 3, off * 5, off), "Save as"))
+        if(_pieceData == null)
         {
-            foreach (var b in _cellsBool)
+            if (GUI.Button(new Rect(off - 4f, off * _cellsBool.GetLength(1) + topOffset * 2.2f, off * 5, off), "Save as"))
             {
-                if (b && _tile != null && _name != string.Empty) 
+                foreach (var b in _cellsBool)
                 {
-                    _pieceData = SaveAs(_name);
-                    _pieceData.UpdateData(_tile, Vector2IntFromBools(_cellsBool), _name);
-                    ClearCellBool();
-                    _saved = true;
-                    return;
+                    if (b && _tile != null && _name != string.Empty)
+                    {
+                        _pieceData = SaveAs(_name);
+                        _pieceData.UpdateData(_tile, Vector2IntFromBools(_cellsBool));
+                        ClearCellBool();
+                        _saved = true;
+                        return;
+                    }
                 }
+
             }
-            
         }
+
     }
 
     private PieceData SaveAs(string name)
