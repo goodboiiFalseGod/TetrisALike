@@ -5,5 +5,3 @@
 - **Difficulty**: Advanced
 - **Topics**: Game Logic, Tilemaps, Grids
 - **Version**: 2020.3 LTS
-- [**Download**](https://github.com/zigurous/unity-tetris-tutorial/archive/refs/heads/main.zip)
-- [**Tutorial Video**](https://youtu.be/ODLzYI4d-J8)
