@@ -89,7 +89,7 @@ public class Board : MonoBehaviour
         for (int i = 0; i < piece.Cells.Length; i++)
         {
             Vector2Int tilePosition = piece.Cells[i] + piece.Position;
-            _tilemap.SetTile((Vector2Int)tilePosition, piece.PieceData.Tile);
+            _tilemap.SetTile((Vector2Int)tilePosition, piece.PieceData.Tiles[piece.Cells[i]]);
             _activePieceCells.Add((Vector2Int)tilePosition);
         }
     }
@@ -212,16 +212,6 @@ public class Board : MonoBehaviour
                 row++;
             }
         }
-
-        /*foreach (int r in rows)
-        {
-            for (int col = _tilemap.Size.xMin; col < _tilemap.Size.xMax; col++)
-            {
-                Vector2Int position = new Vector2Int(col, r);
-                _tilemap.ClearCell(position);
-            }
-        }*/
-
     }
 
 }

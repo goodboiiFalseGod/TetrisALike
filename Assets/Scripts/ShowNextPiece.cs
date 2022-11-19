@@ -29,7 +29,7 @@ public class ShowNextPiece : MonoBehaviour
         for (int i = 0; i < _cells.Length; i++)
         {
             Vector2Int tilePosition = _cells[i];
-            _tilemap.SetTile(tilePosition, _mainBoard.NextPiece.Tile);
+            _tilemap.SetTile(tilePosition, _mainBoard.NextPiece.Tiles[tilePosition]);
         }
     }
 }

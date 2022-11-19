@@ -1,11 +1,14 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
 public class PiecesEditorWindow : EditorWindow
 {
-    private GameObject _tile;
     private bool[,] _cellsBool = new bool[10,20];
+    private Dictionary<Vector2Int, GameObject> _tiles = new Dictionary<Vector2Int, GameObject>(); 
+    private GameObject[] _palette;
+    private GameObject _activeTile = null;
     private PieceData _pieceData;
     private PieceData _previousPieceData;
     private string _name;
@@ -20,11 +23,11 @@ public class PiecesEditorWindow : EditorWindow
     void OnGUI()
     {
         _pieceData = EditorGUILayout.ObjectField("PieceData", _pieceData, typeof(PieceData), false) as PieceData;
+        _activeTile = EditorGUILayout.ObjectField("Tile", _activeTile, typeof(GameObject), false) as GameObject;
         if(_pieceData == null)
         {
             _name = EditorGUILayout.TextField("Piece name", _name);
         }        
-        _tile = EditorGUILayout.ObjectField("Tile", _tile, typeof(GameObject), false) as GameObject;
 
         int boolOffsetX = _cellsBool.GetLength(0) / 2;
         int boolOffsetY = _cellsBool.GetLength(1) / 2;
@@ -32,20 +35,20 @@ public class PiecesEditorWindow : EditorWindow
         if(_pieceData != null && (_pieceData != _previousPieceData || _saved))
         {
             _saved = false;
-            ClearCellBool();
+            ClearField();
 
             _name = _pieceData.name;
-            _tile = _pieceData.Tile;
-            foreach(var cell in _pieceData.Cells)
+            _tiles = _pieceData.Tiles.ToDictionary(entry => entry.Key, entry => entry.Value);
+            foreach (var cell in _pieceData.Cells)
             {
-                _cellsBool[cell.x + boolOffsetX, cell.y + boolOffsetY] = true;
+                _cellsBool[cell.x + boolOffsetX, cell.y + boolOffsetY] = true;                
             }
 
             _previousPieceData = _pieceData;
         }
 
         var topOffset = 40f;
-        var off = 20f;
+        var off = 40f;
 
         //Grid
         {
@@ -53,18 +56,41 @@ public class PiecesEditorWindow : EditorWindow
             {
                 for (int j = 0; j < _cellsBool.GetLength(1); j++)
                 {
-                    //Debug.Log(j.ToString() + " " + _cellsBool.GetLength(1).ToString());
-                    _cellsBool[i, _cellsBool.GetLength(1) - 1 - j] = GUI.Toggle(new Rect(i * off + off, j * off + topOffset * 2, 20, 20), _cellsBool[i, _cellsBool.GetLength(1) - 1 - j], "");
+
+                    Vector2Int cell = new Vector2Int(i - boolOffsetX, j - boolOffsetY);
+
+                    if (_tiles.ContainsKey(cell))
+                    {
+                        if(GUI.Button(new Rect(i * off + off, j * off + topOffset * 2, 40, 40), _tiles[cell].GetComponent<SpriteRenderer>().sprite.texture))
+                        {
+                            _cellsBool[i, j] = false;
+                            _tiles.Remove(cell);
+                        }                        
+
+                    }
+                    else
+                    {
+                        if(GUI.Button(new Rect(i * off + off, j * off + topOffset * 2, 40, 40), ""))
+                        {
+                            _cellsBool[i,j] = true;
+                            _tiles.Add(cell, _activeTile);
+                        }
+                    }
                 }
             }
+        }
+
+        //Palette
+        {
+            //_palette = (GameObject[])Resources.LoadAll("TilesPrefabs", typeof(GameObject));
+            //_activeTile = _palette[0];
         }
 
         if (GUI.Button(new Rect(off * 11, off * _cellsBool.GetLength(1) + topOffset * 2.2f, off * 5, off), "Clear"))
         {
             _pieceData = null;
-            _tile = null;
             _name = string.Empty;
-            ClearCellBool();
+            ClearField();
         }
 
         if(_pieceData != null)
@@ -73,8 +99,8 @@ public class PiecesEditorWindow : EditorWindow
             {
                 if (_pieceData != null)
                 {
-                    _pieceData.UpdateData(_tile, Vector2IntFromBools(_cellsBool));
-                    ClearCellBool();
+                    _pieceData.UpdateData(_tiles, Vector2IntFromBools(_cellsBool));
+                    ClearField();
                     _saved = true;
                 }
             }
@@ -86,11 +112,11 @@ public class PiecesEditorWindow : EditorWindow
             {
                 foreach (var b in _cellsBool)
                 {
-                    if (b && _tile != null && _name != string.Empty)
+                    if (b && _tiles != null && _name != string.Empty)
                     {
                         _pieceData = SaveAs(_name);
-                        _pieceData.UpdateData(_tile, Vector2IntFromBools(_cellsBool));
-                        ClearCellBool();
+                        _pieceData.UpdateData(_tiles, Vector2IntFromBools(_cellsBool));
+                        ClearField();
                         _saved = true;
                         return;
                     }
@@ -104,20 +130,26 @@ public class PiecesEditorWindow : EditorWindow
     private PieceData SaveAs(string name)
     {
         PieceData pieceData = ScriptableObject.CreateInstance<PieceData>();
-        AssetDatabase.CreateAsset(pieceData, "Assets/PieceData/" + name +  ".asset");
+        string path = EditorUtility.SaveFilePanel("Chose folder to save", Application.dataPath + "Assets/", name, "asset");
+        string appDir = Application.dataPath;
+
+        path = path.Replace(appDir, "Assets/");
+
+        AssetDatabase.CreateAsset(pieceData, path);
         AssetDatabase.SaveAssets();
         AssetDatabase.Refresh();
 
         return pieceData;   
     }
 
-    private void ClearCellBool()
+    private void ClearField()
     {
         for (int i = 0; i < _cellsBool.GetLength(0); i++)
         {
             for (int j = 0; j < _cellsBool.GetLength(1); j++)
             {
                 _cellsBool[i, j] = false;
+                //_tiles[new Vector2Int(i, j)] = null;
             }
         }
     }

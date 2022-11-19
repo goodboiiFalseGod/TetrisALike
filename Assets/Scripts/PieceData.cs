@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -5,7 +6,7 @@ using UnityEngine;
 [CreateAssetMenu(menuName = "New piece")]
 public class PieceData : ScriptableObject
 {
-    [SerializeField] private GameObject _tile;
+    [SerializeField] private Dictionary<Vector2Int, GameObject> _tiles;
     [SerializeField] private bool _isCentrified;
     [SerializeField] private Vector2Int[] _cells;
     [SerializeField] private Vector2Int _spawnPositionOffset;
@@ -13,14 +14,14 @@ public class PieceData : ScriptableObject
 
     public Vector2Int SpawnPositionOffset { get => _spawnPositionOffset; }
     public bool IsCentrified { get { return _isCentrified; } }
-    public GameObject Tile { get => _tile; }
+    public Dictionary<Vector2Int, GameObject> Tiles { get => _tiles; }
     public Vector2Int[] Cells { get => _cells; }
     public Vector2Int[] Wallkicks { get => _wallkicks; }
 
-    public void UpdateData(GameObject tile, Vector2Int[] cells)
+    public void UpdateData(Dictionary<Vector2Int, GameObject> tiles, Vector2Int[] cells)
     {
         _cells = Centralize(cells);
-        _tile = tile;
+        _tiles = Centralize(tiles);
         _isCentrified = CheckIsCentrified(cells);
         _wallkicks = CalculateWallkicks(cells).ToArray();
         _spawnPositionOffset = CalculateSpawnPositionOffset(cells);
@@ -90,6 +91,46 @@ public class PieceData : ScriptableObject
         }
 
         result = cells;
+
+        return result;
+    }
+
+    public static Dictionary<Vector2Int, GameObject> Centralize(Dictionary<Vector2Int, GameObject> cells)
+    {
+        Dictionary<Vector2Int, GameObject> result = new Dictionary<Vector2Int, GameObject>();
+        Vector2Int[] buffer = new Vector2Int[cells.Count];
+        cells.Keys.CopyTo(buffer, 0);
+
+        float totalMass = 0;
+        float totalX = 0;
+        float totalY = 0;
+
+        foreach (var c in cells)
+        {
+            totalMass++;
+
+            totalX += c.Key.x;
+            totalY += c.Key.y;
+        }
+
+        Vector2 centerMass = new Vector2(totalX / totalMass, totalY / totalMass);
+
+        int close = 0;
+
+        for (int i = 0; i < buffer.Length; i++)
+        {
+            if (Vector2.Distance(centerMass, buffer[i]) < Vector2.Distance(centerMass, buffer[close]))
+            {
+                close = i;
+            }
+        }
+
+        Vector2Int offset = buffer[close];
+
+        for (int i = 0; i < buffer.Length; i++)
+        {
+            result.Add(buffer[i] - offset, cells[buffer[i]]);
+        }
 
         return result;
     }
