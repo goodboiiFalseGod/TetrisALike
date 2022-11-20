@@ -9,16 +9,16 @@ public class ShowNextPiece : MonoBehaviour
     [SerializeField] private Board _mainBoard;
     [SerializeField] private CustomTilemap _tilemap;
 
-    private Vector2Int[] _cells;
+    private PieceData.ColoredCell[] _cells;
 
     public void UpdatePreview()
     {
-        _cells = new Vector2Int[_mainBoard.NextPiece.Cells.Length];
+        _cells = new PieceData.ColoredCell[_mainBoard.NextPiece.Tiles.Length];
         _tilemap.ClearAll();
 
-        for(int i = 0; i < _mainBoard.NextPiece.Cells.Length; i++)
+        for(int i = 0; i < _mainBoard.NextPiece.Tiles.Length; i++)
         {
-            _cells[i] = _mainBoard.NextPiece.Cells[i];
+            _cells[i] = _mainBoard.NextPiece.Tiles[i];
         }
 
         Set();
@@ -28,8 +28,8 @@ public class ShowNextPiece : MonoBehaviour
     {
         for (int i = 0; i < _cells.Length; i++)
         {
-            Vector2Int tilePosition = _cells[i];
-            _tilemap.SetTile(tilePosition, _mainBoard.NextPiece.Tiles[tilePosition]);
+            PieceData.ColoredCell tilePosition = _cells[i];
+            _tilemap.SetTile(tilePosition.Position, _mainBoard.NextPiece.Tiles[i].Tile);
         }
     }
 }

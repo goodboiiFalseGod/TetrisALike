@@ -37,7 +37,7 @@ public class Ghost : MonoBehaviour
     {
         cells = new Vector3Int[_trackingPiece.Cells.Length];
         for (int i = 0; i < cells.Length; i++) {
-            cells[i] = (Vector3Int)_trackingPiece.Cells[i];
+            cells[i] = (Vector3Int)_trackingPiece.Cells[i].Position;
         }
     }
 

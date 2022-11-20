@@ -2,13 +2,14 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
+using System.IO;
 
 public class PiecesEditorWindow : EditorWindow
 {
-    private bool[,] _cellsBool = new bool[10,20];
-    private Dictionary<Vector2Int, GameObject> _tiles = new Dictionary<Vector2Int, GameObject>(); 
+    private List<PieceData.ColoredCell> _tiles = new List<PieceData.ColoredCell>();
     private GameObject[] _palette;
     private GameObject _activeTile = null;
+    private int _activeTileIndex = 0;
     private PieceData _pieceData;
     private PieceData _previousPieceData;
     private string _name;
@@ -29,20 +30,15 @@ public class PiecesEditorWindow : EditorWindow
             _name = EditorGUILayout.TextField("Piece name", _name);
         }        
 
-        int boolOffsetX = _cellsBool.GetLength(0) / 2;
-        int boolOffsetY = _cellsBool.GetLength(1) / 2;
+        int boolOffsetX = 10 / 2;
+        int boolOffsetY = 20 / 2;
 
         if(_pieceData != null && (_pieceData != _previousPieceData || _saved))
         {
             _saved = false;
-            ClearField();
 
             _name = _pieceData.name;
-            _tiles = _pieceData.Tiles.ToDictionary(entry => entry.Key, entry => entry.Value);
-            foreach (var cell in _pieceData.Cells)
-            {
-                _cellsBool[cell.x + boolOffsetX, cell.y + boolOffsetY] = true;                
-            }
+            _tiles = new List<PieceData.ColoredCell>(_pieceData.Tiles);
 
             _previousPieceData = _pieceData;
         }
@@ -52,28 +48,43 @@ public class PiecesEditorWindow : EditorWindow
 
         //Grid
         {
-            for (int i = 0; i < _cellsBool.GetLength(0); i++)
+            for (int i = 0; i < 10; i++)
             {
-                for (int j = 0; j < _cellsBool.GetLength(1); j++)
+                for (int j = 0; j < 20; j++)
                 {
 
                     Vector2Int cell = new Vector2Int(i - boolOffsetX, j - boolOffsetY);
+                    Vector2Int[] pieceCells = new Vector2Int[_tiles.Count];
 
-                    if (_tiles.ContainsKey(cell))
+                    for(int k = 0; k < _tiles.Count; k++)
                     {
-                        if(GUI.Button(new Rect(i * off + off, j * off + topOffset * 2, 40, 40), _tiles[cell].GetComponent<SpriteRenderer>().sprite.texture))
-                        {
-                            _cellsBool[i, j] = false;
-                            _tiles.Remove(cell);
-                        }                        
+                        pieceCells[k] = _tiles[k].Position;
+                    }
 
+                    if (pieceCells.Contains(cell))
+                    {
+                        int a = 0;
+                        for ( ; a < _tiles.Count; a++)
+                        {
+                            if (_tiles[a].Position == cell)
+                            {                                
+                                break;
+                            }
+                        }
+
+                        if (GUI.Button(new Rect(i * off + off, j * off + topOffset * 2, 40, 40), _tiles[a].Tile.GetComponent<SpriteRenderer>().sprite.texture))
+                        {
+                            _tiles.RemoveAt(a);
+                        }
                     }
                     else
                     {
-                        if(GUI.Button(new Rect(i * off + off, j * off + topOffset * 2, 40, 40), ""))
+                        if (GUI.Button(new Rect(i * off + off, j * off + topOffset * 2, 40, 40), ""))
                         {
-                            _cellsBool[i,j] = true;
-                            _tiles.Add(cell, _activeTile);
+                            PieceData.ColoredCell colored = new PieceData.ColoredCell();
+                            colored.Position = cell;
+                            colored.Tile = _activeTile;
+                            _tiles.Add(colored);
                         }
                     }
                 }
@@ -82,25 +93,72 @@ public class PiecesEditorWindow : EditorWindow
 
         //Palette
         {
-            //_palette = (GameObject[])Resources.LoadAll("TilesPrefabs", typeof(GameObject));
-            //_activeTile = _palette[0];
+            var info = new DirectoryInfo("Assets/Resources/TilesPrefabs/");
+            var fileInfo = info.GetFiles();
+            List<GameObject> prefabs = new List<GameObject>();
+            foreach (FileInfo file in fileInfo)
+            {
+                if(file.Name.Contains(".meta")) continue;
+
+                prefabs.Add(AssetDatabase.LoadAssetAtPath<GameObject>(info + file.Name));
+            }
+
+            _palette = new GameObject[prefabs.Count];
+            for(int i = 0; i < prefabs.Count; i++)
+            {
+                _palette[i] = prefabs[i];
+            }
+
+            if(_activeTile == null)
+            {
+                _activeTileIndex = 0;
+                _activeTile = _palette[_activeTileIndex];
+            }
+
+            int k = 0;
+
+            for(int i = 0; i < 5; i++)
+            {
+                if (k >= _palette.Length)
+                {
+                    break;
+                }
+
+                for (int j = 0; j < Mathf.RoundToInt(_palette.Length / 5) + 1; j++)
+                {
+                    if (k >= _palette.Length)
+                    {
+                        break;
+                    }
+
+                    if (k == _activeTileIndex)
+                    {
+                        GUI.Button(new Rect(i * off + off * 13, j * off + topOffset * 2, 25, 25), _palette[k].GetComponent<SpriteRenderer>().sprite.texture);
+                    }
+                    else
+                    {
+                        if (GUI.Button(new Rect(i * off + off * 13, j * off + topOffset * 2, 40, 40), _palette[k].GetComponent<SpriteRenderer>().sprite.texture))
+                        {
+                            _activeTileIndex = k;
+                            _activeTile = _palette[k];
+                        }
+                    }
+
+                    k++;
+
+                }
+
+            }            
         }
 
-        if (GUI.Button(new Rect(off * 11, off * _cellsBool.GetLength(1) + topOffset * 2.2f, off * 5, off), "Clear"))
-        {
-            _pieceData = null;
-            _name = string.Empty;
-            ClearField();
-        }
 
         if(_pieceData != null)
         {
-            if (GUI.Button(new Rect(off - 4f, off * _cellsBool.GetLength(1) + topOffset * 2.2f, off * 5, off), "Save"))
+            if (GUI.Button(new Rect(off - 4f, off *20 + topOffset * 2.2f, off * 5, off), "Save"))
             {
                 if (_pieceData != null)
                 {
-                    _pieceData.UpdateData(_tiles, Vector2IntFromBools(_cellsBool));
-                    ClearField();
+                    _pieceData.UpdateData(_tiles.ToArray());
                     _saved = true;
                 }
             }
@@ -108,18 +166,14 @@ public class PiecesEditorWindow : EditorWindow
 
         if(_pieceData == null)
         {
-            if (GUI.Button(new Rect(off - 4f, off * _cellsBool.GetLength(1) + topOffset * 2.2f, off * 5, off), "Save as"))
+            if (GUI.Button(new Rect(off - 4f, off * 20 + topOffset * 2.2f, off * 5, off), "Save as"))
             {
-                foreach (var b in _cellsBool)
+                if (_tiles != null && _tiles.Count != 0 && _name != string.Empty)
                 {
-                    if (b && _tiles != null && _name != string.Empty)
-                    {
-                        _pieceData = SaveAs(_name);
-                        _pieceData.UpdateData(_tiles, Vector2IntFromBools(_cellsBool));
-                        ClearField();
-                        _saved = true;
-                        return;
-                    }
+                    _pieceData = SaveAs(_name);
+                    _pieceData.UpdateData(_tiles.ToArray());
+                    _saved = true;
+                    return;
                 }
 
             }
@@ -140,18 +194,6 @@ public class PiecesEditorWindow : EditorWindow
         AssetDatabase.Refresh();
 
         return pieceData;   
-    }
-
-    private void ClearField()
-    {
-        for (int i = 0; i < _cellsBool.GetLength(0); i++)
-        {
-            for (int j = 0; j < _cellsBool.GetLength(1); j++)
-            {
-                _cellsBool[i, j] = false;
-                //_tiles[new Vector2Int(i, j)] = null;
-            }
-        }
     }
 
     private Vector2Int[] Vector2IntFromBools(bool[,] bools)

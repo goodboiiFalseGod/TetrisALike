@@ -8,15 +8,14 @@ public class Piece : MonoBehaviour
 
     private float stepTime;
     private float moveTime;
-    private float lockTime;
     private Board _board;
     private PieceData _data;    
-    private Vector2Int[] _cells;
+    private PieceData.ColoredCell[] _cells;
     private Vector2Int _position;
     private int _rotationIndex;
 
     public Vector2Int Position { get => _position; }
-    public Vector2Int[] Cells { get => _cells; }
+    public PieceData.ColoredCell[] Cells { get => _cells; }
     public PieceData PieceData { get => _data; }
 
     public void Initialize(Board board, Vector2Int position, PieceData data)
@@ -28,19 +27,17 @@ public class Piece : MonoBehaviour
         _rotationIndex = 0;
         stepTime = Time.time + stepDelay;
         moveTime = Time.time + moveDelay;
-        lockTime = 0f;
 
-        _cells = new Vector2Int[data.Cells.Length];
+        _cells = new PieceData.ColoredCell[data.Tiles.Length];
 
         for (int i = 0; i < _cells.Length; i++) {
-            _cells[i] = data.Cells[i];
+            _cells[i] = data.Tiles[i];
         }
     }
 
     private void Update()
     {
         _board.Clear(this);
-        lockTime += Time.deltaTime;
 
         if (Input.GetKeyDown(KeyCode.Q)) {
             Rotate(-1);
@@ -125,7 +122,6 @@ public class Piece : MonoBehaviour
         {
             _position = newPosition;
             moveTime = Time.time + moveDelay;
-            lockTime = 0f;
         }
 
         return valid;
@@ -136,7 +132,7 @@ public class Piece : MonoBehaviour
         int originalRotation = _rotationIndex;
         _rotationIndex = Wrap(_rotationIndex + direction, 0, 4);
         ApplyRotationMatrix(direction);
-        if (!TestWallKicks((Vector2Int[])_cells, _rotationIndex, direction))
+        if (!TestWallKicks())
         {
             _rotationIndex = originalRotation;
             ApplyRotationMatrix(-direction);
@@ -148,7 +144,7 @@ public class Piece : MonoBehaviour
         float[] matrix = Data.RotationMatrix;
         for (int i = 0; i < _cells.Length; i++)
         {
-            Vector2 cell = _cells[i];
+            Vector2 cell = _cells[i].Position;
 
             int x, y;
 
@@ -165,11 +161,11 @@ public class Piece : MonoBehaviour
                 y = Mathf.CeilToInt((cell.x * matrix[2] * direction) + (cell.y * matrix[3] * direction));
             }
 
-            _cells[i] = new Vector2Int(x, y);
+            _cells[i].Position = new Vector2Int(x, y);
         }
     }
 
-    private bool TestWallKicks(Vector2Int[] cells, int rotationIndex, int rotationDirection)
+    private bool TestWallKicks()
     {
         Vector2Int[] wallkicks = _data.Wallkicks;
 

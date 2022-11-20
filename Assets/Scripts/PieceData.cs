@@ -6,28 +6,32 @@ using UnityEngine;
 [CreateAssetMenu(menuName = "New piece")]
 public class PieceData : ScriptableObject
 {
-    [SerializeField] private Dictionary<Vector2Int, GameObject> _tiles;
+    [SerializeField] private ColoredCell[] _tiles;
     [SerializeField] private bool _isCentrified;
-    [SerializeField] private Vector2Int[] _cells;
     [SerializeField] private Vector2Int _spawnPositionOffset;
     [SerializeField] private Vector2Int[] _wallkicks;
+    
+    [Serializable]
+    public struct ColoredCell
+    {
+        public Vector2Int Position;
+        public GameObject Tile;
+    }
 
     public Vector2Int SpawnPositionOffset { get => _spawnPositionOffset; }
     public bool IsCentrified { get { return _isCentrified; } }
-    public Dictionary<Vector2Int, GameObject> Tiles { get => _tiles; }
-    public Vector2Int[] Cells { get => _cells; }
+    public ColoredCell[] Tiles { get => _tiles; }
     public Vector2Int[] Wallkicks { get => _wallkicks; }
 
-    public void UpdateData(Dictionary<Vector2Int, GameObject> tiles, Vector2Int[] cells)
+    public void UpdateData(ColoredCell[] tiles)
     {
-        _cells = Centralize(cells);
         _tiles = Centralize(tiles);
-        _isCentrified = CheckIsCentrified(cells);
-        _wallkicks = CalculateWallkicks(cells).ToArray();
-        _spawnPositionOffset = CalculateSpawnPositionOffset(cells);
+        _isCentrified = CheckIsCentrified(tiles);
+        _wallkicks = CalculateWallkicks(tiles).ToArray();
+        _spawnPositionOffset = CalculateSpawnPositionOffset(tiles);        
     }
 
-    private static List<Vector2Int> CalculateWallkicks(Vector2Int[] cells)
+    private static List<Vector2Int> CalculateWallkicks(ColoredCell[] cells)
     {
         int height = CalculateHeight(cells);
         int width = CalculateWidth(cells);
@@ -95,11 +99,9 @@ public class PieceData : ScriptableObject
         return result;
     }
 
-    public static Dictionary<Vector2Int, GameObject> Centralize(Dictionary<Vector2Int, GameObject> cells)
+    public static ColoredCell[] Centralize(ColoredCell[] cells)
     {
-        Dictionary<Vector2Int, GameObject> result = new Dictionary<Vector2Int, GameObject>();
-        Vector2Int[] buffer = new Vector2Int[cells.Count];
-        cells.Keys.CopyTo(buffer, 0);
+        ColoredCell[] result = new ColoredCell[cells.Length];
 
         float totalMass = 0;
         float totalX = 0;
@@ -109,46 +111,47 @@ public class PieceData : ScriptableObject
         {
             totalMass++;
 
-            totalX += c.Key.x;
-            totalY += c.Key.y;
+            totalX += c.Position.x;
+            totalY += c.Position.y;
         }
 
         Vector2 centerMass = new Vector2(totalX / totalMass, totalY / totalMass);
 
         int close = 0;
 
-        for (int i = 0; i < buffer.Length; i++)
+        for (int i = 0; i < cells.Length; i++)
         {
-            if (Vector2.Distance(centerMass, buffer[i]) < Vector2.Distance(centerMass, buffer[close]))
+            if (Vector2.Distance(centerMass, cells[i].Position) < Vector2.Distance(centerMass, cells[close].Position))
             {
                 close = i;
             }
         }
 
-        Vector2Int offset = buffer[close];
+        Vector2Int offset = cells[close].Position;
 
-        for (int i = 0; i < buffer.Length; i++)
+        for (int i = 0; i < cells.Length; i++)
         {
-            result.Add(buffer[i] - offset, cells[buffer[i]]);
+            result[i].Position = cells[i].Position - offset;
+            result[i].Tile = cells[i].Tile;
         }
 
         return result;
     }
 
-    private static Vector2Int CalculateSpawnPositionOffset(Vector2Int[] cells)
+    private static Vector2Int CalculateSpawnPositionOffset(ColoredCell[] cells)
     {
         int top = 0;
         for(int i = 0; i < cells.Length; i++)
         {
-            if(cells[i].y > top)
+            if(cells[i].Position.y > top)
             {
-                top = cells[i].y;
+                top = cells[i].Position.y;
             }
         }
         return new Vector2Int(0, -top - 1);
     }
 
-    private static bool CheckIsCentrified(Vector2Int[] cells)
+    private static bool CheckIsCentrified(ColoredCell[] cells)
     {
         bool result;
 
@@ -160,8 +163,8 @@ public class PieceData : ScriptableObject
         {
             totalMass++;
 
-            totalX += c.x;
-            totalY += c.y;
+            totalX += c.Position.x;
+            totalY += c.Position.y;
         }
 
         Vector2 centerMass = new Vector2(totalX / totalMass, totalY / totalMass);
@@ -178,40 +181,40 @@ public class PieceData : ScriptableObject
         return result;
     }
 
-    private static int CalculateWidth(Vector2Int[] cells)
+    private static int CalculateWidth(ColoredCell[] cells)
     {
         int xMin = 0;
         int xMax = 0;
 
         foreach (var cell in cells)
         {
-            if (cell.x < xMin)
+            if (cell.Position.x < xMin)
             {
-                xMin = cell.x;
+                xMin = cell.Position.x;
             }
             else
             {
-                xMax = cell.x;
+                xMax = cell.Position.x;
             }
         }
 
         return xMax - xMin + 1;
     }
 
-    private static int CalculateHeight(Vector2Int[] cells)
+    private static int CalculateHeight(ColoredCell[] cells)
     {
         int yMin = 0;
         int yMax = 0;
 
         foreach (var cell in cells)
         {
-            if (cell.y < yMin)
+            if (cell.Position.y < yMin)
             {
-                yMin = cell.y;
+                yMin = cell.Position.y;
             }
             else
             {
-                yMax = cell.y;
+                yMax = cell.Position.y;
             }
         }
 

@@ -1010,13 +1010,8 @@ MonoBehaviour:
   _scoreManager: {fileID: 744231639}
   _showNextPiece: {fileID: 1142168170}
   _tetrominoes:
-  - {fileID: 11400000, guid: a57197519cbf9d14196e701ebbaa1185, type: 2}
-  - {fileID: 11400000, guid: 428bd9fb292aeaf4981dd61abfe50a1f, type: 2}
-  - {fileID: 11400000, guid: a7d53e3439eda8d4b8f91943c43392ff, type: 2}
-  - {fileID: 11400000, guid: af59958e200d9be4f893958dadf5ed8f, type: 2}
   - {fileID: 11400000, guid: 840de0b6111bcfc40bed6f976fcca88a, type: 2}
-  - {fileID: 11400000, guid: 6325d598216fa4641a67aeb43a31926e, type: 2}
-  - {fileID: 11400000, guid: 4a748fbd2a1aadd4cb7f3be4f89beade, type: 2}
+  - {fileID: 11400000, guid: 840de0b6111bcfc40bed6f976fcca88a, type: 2}
   _boardSize: {x: 10, y: 20}
 --- !u!1 &2144466704
 GameObject:

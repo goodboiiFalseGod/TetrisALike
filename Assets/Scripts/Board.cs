@@ -88,8 +88,8 @@ public class Board : MonoBehaviour
         _activePieceCells.Clear();
         for (int i = 0; i < piece.Cells.Length; i++)
         {
-            Vector2Int tilePosition = piece.Cells[i] + piece.Position;
-            _tilemap.SetTile((Vector2Int)tilePosition, piece.PieceData.Tiles[piece.Cells[i]]);
+            Vector2Int tilePosition = piece.Cells[i].Position + piece.Position;
+            _tilemap.SetTile(tilePosition, piece.PieceData.Tiles[i].Tile);
             _activePieceCells.Add((Vector2Int)tilePosition);
         }
     }
@@ -98,8 +98,11 @@ public class Board : MonoBehaviour
     {
         for (int i = 0; i < piece.Cells.Length; i++)
         {
-            Vector2Int tilePosition = piece.Cells[i] + piece.Position;
-            _tilemap.ClearCell((Vector2Int)tilePosition);
+            Vector2Int tilePosition = piece.Cells[i].Position + piece.Position;
+            if(_tilemap.HasTile(tilePosition))
+            {
+                _tilemap.ClearCell((Vector2Int)tilePosition);
+            }
         }
     }
 
@@ -109,7 +112,7 @@ public class Board : MonoBehaviour
 
         for (int i = 0; i < piece.Cells.Length; i++)
         {
-            Vector2Int tilePosition = piece.Cells[i] + position;
+            Vector2Int tilePosition = piece.Cells[i].Position + position;
 
             if (!bounds.Contains((Vector2Int)tilePosition)) {
                 return false;
