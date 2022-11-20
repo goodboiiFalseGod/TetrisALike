@@ -31,7 +31,12 @@ public class CustomTilemap : MonoBehaviour
 
     public GameObject GetTile(Vector2Int cell)
     {
-        return _cells[cell].tile;
+        return _cells[cell]._tile;
+    }
+
+    public SpriteRenderer GetTileSpriteRenderer(Vector2Int cell)
+    {
+        return _cells[cell]._spriteRenderer;
     }
 
     public List<Vector2Int> GetAllOccupiedCells()
@@ -97,43 +102,47 @@ public class CustomTilemap : MonoBehaviour
         return Size.Contains(pos);
     }
 
-    //Review Чо с ебалом (неймингом)?
     private class Cell
     {
-        public GameObject tile;
-        public CustomTilemap customTilemap;
-        private int x;
-        private int y;
+        public GameObject _tile;
+        public CustomTilemap _customTilemap;
+        public SpriteRenderer _spriteRenderer;
 
-        public int X { get => x; }
-        public int Y { get => y; }
+        private Vector2Int _position;
+        private int _x;
+        private int _y;
+
+        public int X => _x;
+        public int Y => _y;
+        public SpriteRenderer SpriteRenderer => _spriteRenderer;
 
         public Vector2Int Position 
-        { 
-            get => new Vector2Int(x, y); 
+        {
+            get => _position;
             private set 
             {
-                x = value.x; 
-                y = value.y;
+                _position = value;
+                _x = value.x; 
+                _y = value.y;
             } 
         }
 
         public Cell(CustomTilemap customTilemap, Vector2Int position)
         {
-            this.customTilemap = customTilemap;
+            this._customTilemap = customTilemap;
             Position = position;
         }
 
         public Cell(CustomTilemap customTilemap, Vector2Int position, GameObject tile)
         {
-            this.customTilemap = customTilemap;
+            this._customTilemap = customTilemap;
             Position = position;
             SetTile(tile);
         }
 
         public bool HasTile()
         {
-            if (tile != null)
+            if (_tile != null)
             {
                 return true;
             }
@@ -143,10 +152,10 @@ public class CustomTilemap : MonoBehaviour
 
         public bool ClearTile()
         {
-            if (tile != null)
+            if (_tile != null)
             {
-                Destroy(tile);
-                tile = null;
+                Destroy(_tile);
+                _tile = null;
 
                 return true;
             }
@@ -155,26 +164,28 @@ public class CustomTilemap : MonoBehaviour
 
         public bool SetTile(GameObject newTile)
         {
-            if (tile != null)
+            if (_tile != null)
             {
                 return false;
             }
 
-            tile = Instantiate(newTile, customTilemap.transform);
-            tile.transform.localPosition = Vector3.zero + (Vector3Int)this.Position;
+            _tile = Instantiate(newTile, _customTilemap.transform);
+            _tile.transform.localPosition = Vector3.zero + (Vector3Int)this.Position;
+            _spriteRenderer = _tile.GetComponent<SpriteRenderer>();
 
             return true;
         }
 
         public bool ReplaceTile(GameObject newTile)
         {
-            if (tile != null)
+            if (_tile != null)
             {
                 ClearTile();
             }
 
-            tile = Instantiate(newTile, customTilemap.transform);
-            tile.transform.localPosition = Vector3.zero + (Vector3Int)this.Position;
+            _tile = Instantiate(newTile, _customTilemap.transform);
+            _tile.transform.localPosition = Vector3.zero + (Vector3Int)this.Position;
+            _spriteRenderer = _tile.GetComponent<SpriteRenderer>();
 
             return true;
         }

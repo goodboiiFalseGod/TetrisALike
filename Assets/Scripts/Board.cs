@@ -5,9 +5,6 @@ using System.Linq;
 
 public class Board : MonoBehaviour
 {
-    //Review 
-    //1. Убрать публичные методы, там где не нужны
-    
     [SerializeField] private CustomTilemap _tilemap;
     [SerializeField] private Piece _activePiece;
     [SerializeField] private ScoreManager _scoreManager;
@@ -16,25 +13,19 @@ public class Board : MonoBehaviour
     [SerializeField] private PieceData[] _tetrominoes;
     [SerializeField] private Vector2Int _boardSize = new Vector2Int(10, 20);
 
+    private RectInt _bounds;
     private Vector2Int _top;
     private PieceData _nextPiece;
 
     public PieceData NextPiece => _nextPiece;
     public Vector2Int BoardSize => _boardSize;
-
-    //Review 
-    //Заменить проперти на поле
-    private RectInt Bounds {
-        get
-        {
-            Vector2Int position = new Vector2Int(-_boardSize.x / 2, -_boardSize.y / 2);
-            return new RectInt(position, _boardSize);
-        }
-    }
+    public RectInt Bounds => _bounds;
 
     private void Start()
     {
-        _top = new Vector2Int(-Bounds.xMax / 2 + 1, Bounds.yMax);
+        Vector2Int position = new Vector2Int(-_boardSize.x / 2, -_boardSize.y / 2);
+        _bounds = new RectInt(position, _boardSize);
+        _top = new Vector2Int(-_bounds.xMax / 2 + 1, _bounds.yMax);
         SpawnPiece(ChooseNextPiece());
         _nextPiece = ChooseNextPiece();
         _showNextPiece.UpdatePreview();
@@ -47,7 +38,7 @@ public class Board : MonoBehaviour
         _activePiece.Initialize(this, _nextPiece.SpawnPositionOffset + _top, _nextPiece);
 
         if (IsValidPosition(_nextPiece.SpawnPositionOffset + _top, _activePiece.Cells)) {
-            Set(_activePiece);
+            Set(_activePiece.Cells, _activePiece.Position);
         } else {
             GameOver();
         }
@@ -62,7 +53,7 @@ public class Board : MonoBehaviour
 
         if (IsValidPosition(data.SpawnPositionOffset + _top, _activePiece.Cells))
         {
-            Set(_activePiece);
+            Set(_activePiece.Cells, _activePiece.Position);
         }
         else
         {
@@ -70,28 +61,26 @@ public class Board : MonoBehaviour
         }
     }
 
-    public void GameOver()
+    private void GameOver()
     {
         _tilemap.ClearAll();
         _scoreManager.GameOver();
     }
 
-    //Review
-    //Поменять параметр на IEnumerable<PieceData.ColoredCell> coloredCells
-    public void Set(Piece piece)
+    public void Set(IEnumerable<PieceData.ColoredCell> pieceCells, Vector2Int piecePosition)
     {
-        foreach (PieceData.ColoredCell cell in piece.Cells)
+        foreach (PieceData.ColoredCell cell in pieceCells)
         {
-            Vector2Int tilePosition = cell.Position + piece.Position;
+            Vector2Int tilePosition = cell.Position + piecePosition;
             _tilemap.SetTile(tilePosition, cell.Tile);
         }
     }
 
-    public void Clear(Piece piece)
+    public void Clear(IEnumerable<PieceData.ColoredCell> pieceCells, Vector2Int piecePosition)
     {
-        for (int i = 0; i < piece.Cells.Length; i++)
+        foreach (PieceData.ColoredCell cell in pieceCells)
         {
-            Vector2Int tilePosition = piece.Cells[i].Position + piece.Position;
+            Vector2Int tilePosition = cell.Position + piecePosition;
             if(_tilemap.HasTile(tilePosition))
             {
                 _tilemap.ClearCell(tilePosition);
@@ -101,7 +90,7 @@ public class Board : MonoBehaviour
 
     public bool IsValidPosition(Vector2Int position, IEnumerable<PieceData.ColoredCell> coloredCells)
     {
-        RectInt bounds = Bounds;
+        RectInt bounds = _bounds;
 
         foreach (PieceData.ColoredCell coloredCell in coloredCells)
         {
@@ -119,7 +108,7 @@ public class Board : MonoBehaviour
 
     public void CheckAndClearLines()
     {
-        RectInt bounds = Bounds;
+        RectInt bounds = _bounds;
         int linesCleared = 0;
         List<int> toClear = new List<int>();
 
@@ -139,7 +128,7 @@ public class Board : MonoBehaviour
 
     private bool IsLineFull(int row)
     {
-        for (int column = Bounds.xMin; column < Bounds.xMax; column++)
+        for (int column = _bounds.xMin; column < _bounds.xMax; column++)
         {
             Vector2Int position = new Vector2Int(column, row);
 
@@ -152,8 +141,9 @@ public class Board : MonoBehaviour
         return true;
     }
 
-    public void AnimateClear(List<int> rows)
+    private void AnimateClear(List<int> rows)
     {
+        DOTween.KillAll();
         Sequence sequence = DOTween.Sequence();
 
         foreach(int row in rows)
@@ -161,43 +151,43 @@ public class Board : MonoBehaviour
             for (int col = _tilemap.Size.xMin; col < _tilemap.Size.xMax; col++)
             {
                 Vector2Int position = new Vector2Int(col, row);
-                //Review
-                // ВЫЗОВ ГЕТ КОМПОНЕНТ В ДВОЙНОМ ЦИКЛЕ?!?!??!?!?!?!?!?!?!?!
-                sequence.Join(_tilemap.GetTile(position).GetComponent<SpriteRenderer>().DOFade(0f, 0.5f));
+                sequence.Join(_tilemap.GetTileSpriteRenderer(position).DOFade(0f, 0.5f));
             }
         }
 
-        sequence.OnComplete(() => ClearLine(rows));
+        sequence.OnComplete(() => ClearLinesIndex(rows));
     }
 
-
-    //Review
-    //Вынести основную логику в отдельный метод
-    private void ClearLine(List<int> rows)
+    private void ClearLinesIndex(List<int> rowsIndex)
     {
-        foreach (int rowIndex in rows)
+        foreach (int rowIndex in rowsIndex)
         {
             for (int row = rowIndex; row < _tilemap.Size.yMax; row++)
             {
-                for (int col = _tilemap.Size.xMin; col < _tilemap.Size.xMax; col++)
-                {
-                    Vector2Int position = new Vector2Int(col, row + 1);
-                    Vector2Int newPosition = new Vector2Int(col, row);
-                    
-                    if (_activePiece.Cells
-                        .Select(cell => cell.Position + _activePiece.Position)
-                        .Contains(position)) continue;
-
-                    if (!_tilemap.HasTile(position))
-                    {
-                        _tilemap.ClearCell(newPosition);
-                        continue;
-                    }
-
-                    _tilemap.ClearCell(position);
-                    _tilemap.ReplaceTile(newPosition, _tilemap.GetTile(position));
-                }
+                ClearLineIndex(row);
             }
+        }
+    }
+
+    private void ClearLineIndex(int rowIndex)
+    {
+        for (int col = _tilemap.Size.xMin; col < _tilemap.Size.xMax; col++)
+        {
+            Vector2Int rowPosition = new Vector2Int(col, rowIndex);
+            Vector2Int upperRowPosition = new Vector2Int(col, rowIndex + 1);
+
+            if (_activePiece.Cells
+                .Select(cell => cell.Position + _activePiece.Position)
+                .Contains(upperRowPosition)) continue;
+
+            if (!_tilemap.HasTile(upperRowPosition))
+            {
+                _tilemap.ClearCell(rowPosition);
+                continue;
+            }
+
+            _tilemap.ReplaceTile(rowPosition, _tilemap.GetTile(upperRowPosition));
+            _tilemap.ClearCell(upperRowPosition);
         }
     }
 

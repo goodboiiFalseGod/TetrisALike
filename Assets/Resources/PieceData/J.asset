@@ -10,20 +10,20 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 750041f85ec87b64e8544eb8335cb402, type: 3}
-  m_Name: S
+  m_Name: J
   m_EditorClassIdentifier: 
   _tiles:
-  - Position: {x: 1, y: 0}
-    Tile: {fileID: 8481736722873158433, guid: 8120467f2d995b94eb8880b25ad40ca0, type: 3}
+  - Position: {x: -1, y: 1}
+    Tile: {fileID: 4233394936600447652, guid: 22c2fbd9fa3069447a6c4c93be285397, type: 3}
+  - Position: {x: -1, y: 0}
+    Tile: {fileID: 4233394936600447652, guid: 22c2fbd9fa3069447a6c4c93be285397, type: 3}
   - Position: {x: 0, y: 0}
-    Tile: {fileID: 8481736722873158433, guid: 8120467f2d995b94eb8880b25ad40ca0, type: 3}
-  - Position: {x: 0, y: -1}
-    Tile: {fileID: 8481736722873158433, guid: 8120467f2d995b94eb8880b25ad40ca0, type: 3}
-  - Position: {x: -1, y: -1}
-    Tile: {fileID: 8481736722873158433, guid: 8120467f2d995b94eb8880b25ad40ca0, type: 3}
+    Tile: {fileID: 4233394936600447652, guid: 22c2fbd9fa3069447a6c4c93be285397, type: 3}
+  - Position: {x: 1, y: 0}
+    Tile: {fileID: 4233394936600447652, guid: 22c2fbd9fa3069447a6c4c93be285397, type: 3}
   _isCentrified: 1
   _centerOfMass: {x: 0, y: 0}
-  _spawnPositionOffset: {x: 0, y: -1}
+  _spawnPositionOffset: {x: 0, y: -2}
   _wallkicks:
   - {x: 0, y: 0}
   - {x: 0, y: 0}

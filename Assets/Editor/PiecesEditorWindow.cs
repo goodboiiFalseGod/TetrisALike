@@ -44,7 +44,8 @@ public class PiecesEditorWindow : EditorWindow
         }
 
         var topOffset = 40f;
-        var off = 40f;
+        var off = 40f * Screen.height / 1080;
+        var size = 40f * Screen.height / 1080;
 
         //Grid
         {
@@ -72,14 +73,14 @@ public class PiecesEditorWindow : EditorWindow
                             }
                         }
 
-                        if (GUI.Button(new Rect(i * off + off, j * off + topOffset * 2, 40, 40), _tiles[a].Tile.GetComponent<SpriteRenderer>().sprite.texture))
+                        if (GUI.Button(new Rect(i * off + off, j * off + topOffset * 2, size, size), _tiles[a].Tile.GetComponent<SpriteRenderer>().sprite.texture))
                         {
                             _tiles.RemoveAt(a);
                         }
                     }
                     else
                     {
-                        if (GUI.Button(new Rect(i * off + off, j * off + topOffset * 2, 40, 40), ""))
+                        if (GUI.Button(new Rect(i * off + off, j * off + topOffset * 2, size, size), ""))
                         {
                             PieceData.ColoredCell colored = new PieceData.ColoredCell();
                             colored.Position = cell;
@@ -133,12 +134,12 @@ public class PiecesEditorWindow : EditorWindow
 
                     if (k == _activeTileIndex)
                     {
-                        GUI.DrawTexture(new Rect(i * off + off * 13, j * off + topOffset * 2, 40, 40), _palette[k].GetComponent<SpriteRenderer>().sprite.texture);
-                        GUI.Button(new Rect(i * off + off * 13 + 5, j * off + topOffset * 2 + 5, 30, 30), _palette[k].GetComponent<SpriteRenderer>().sprite.texture);
+                        GUI.DrawTexture(new Rect(i * off + off * 13, j * off + topOffset * 2, size, size), _palette[k].GetComponent<SpriteRenderer>().sprite.texture);
+                        GUI.Button(new Rect(i * off + off * 13 + 5, j * off + topOffset * 2 + 5, size / 1.2f, size / 1.2f), _palette[k].GetComponent<SpriteRenderer>().sprite.texture);
                     }
                     else
                     {
-                        if (GUI.Button(new Rect(i * off + off * 13, j * off + topOffset * 2, 40, 40), _palette[k].GetComponent<SpriteRenderer>().sprite.texture))
+                        if (GUI.Button(new Rect(i * off + off * 13, j * off + topOffset * 2, size, size), _palette[k].GetComponent<SpriteRenderer>().sprite.texture))
                         {
                             _activeTileIndex = k;
                             _activeTile = _palette[k];
@@ -175,7 +176,7 @@ public class PiecesEditorWindow : EditorWindow
         {
             if (GUI.Button(new Rect(off - 4f, off * 20 + topOffset * 2.2f, off * 3, off), "Save as"))
             {
-                if (_tiles != null && _tiles.Count != 0 && _name != string.Empty)
+                if (_tiles != null && _tiles.Count != 0)
                 {
                     _pieceData = SaveAs(_name);
                     _pieceData.UpdateData(_tiles.ToArray());

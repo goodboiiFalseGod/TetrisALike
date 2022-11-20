@@ -8,6 +8,7 @@ public class PieceData : ScriptableObject
 {
     [SerializeField] private ColoredCell[] _tiles;
     [SerializeField] private bool _isCentrified;
+    [SerializeField] private Vector2 _centerOfMass;
     [SerializeField] private Vector2Int _spawnPositionOffset;
     [SerializeField] private Vector2Int[] _wallkicks;
     
@@ -17,18 +18,19 @@ public class PieceData : ScriptableObject
         public Vector2Int Position;
         public GameObject Tile;
     }
-
-    public Vector2Int SpawnPositionOffset { get => _spawnPositionOffset; }
-    public bool IsCentrified { get { return _isCentrified; } }
-    public ColoredCell[] Tiles { get => _tiles; }
-    public Vector2Int[] Wallkicks { get => _wallkicks; }
+    public Vector2Int SpawnPositionOffset => _spawnPositionOffset;
+    public bool IsCentrified => _isCentrified;
+    public ColoredCell[] Tiles => _tiles;
+    public Vector2Int[] Wallkicks => _wallkicks;
+    public Vector2 CenterOfMass => _centerOfMass;
 
     public void UpdateData(ColoredCell[] tiles)
     {
         _tiles = Centralize(tiles);
-        _isCentrified = CheckIsCentrified(tiles);
-        _wallkicks = CalculateWallkicks(tiles).ToArray();
-        _spawnPositionOffset = CalculateSpawnPositionOffset(tiles);        
+        _centerOfMass = CalculateCenterOfMass(_tiles);
+        _isCentrified = CheckIsCentrified(_centerOfMass);
+        _wallkicks = CalculateWallkicks(_tiles).ToArray();
+        _spawnPositionOffset = CalculateSpawnPositionOffset(_tiles);        
     }
 
     private static List<Vector2Int> CalculateWallkicks(ColoredCell[] cells)
@@ -59,44 +61,32 @@ public class PieceData : ScriptableObject
         return result;
     }
 
-    public static Vector2Int[] Centralize(Vector2Int[] cells)
+    public static Vector2 CalculateCenterOfMass(ColoredCell[] cells)
     {
-        Vector2Int[] result = new Vector2Int[cells.Length];
-
         float totalMass = 0;
         float totalX = 0;
         float totalY = 0;
 
-        foreach(var c in cells)
+        foreach (var c in cells)
         {
             totalMass++;
 
-            totalX += c.x;
-            totalY += c.y;
+            totalX += c.Position.x;
+            totalY += c.Position.y;
         }
 
         Vector2 centerMass = new Vector2(totalX / totalMass, totalY / totalMass);
 
-        int close = 0; 
-
-        for(int i = 0; i < cells.Length; i++)
+        if(centerMass.x != 0.5)
         {
-            if(Vector2.Distance(centerMass, cells[i]) < Vector2.Distance(centerMass, cells[close]))
-            {
-                close = i;
-            }
+            centerMass = Vector2.zero;
+        }
+        else
+        {
+            centerMass.y = -0.5f;
         }
 
-        Vector2Int offset = cells[close];
-
-        for (int i = 0; i < cells.Length; i++)
-        {
-            cells[i] -= offset;
-        }
-
-        result = cells;
-
-        return result;
+        return centerMass;
     }
 
     public static ColoredCell[] Centralize(ColoredCell[] cells)
@@ -140,7 +130,7 @@ public class PieceData : ScriptableObject
 
     private static Vector2Int CalculateSpawnPositionOffset(ColoredCell[] cells)
     {
-        int top = 0;
+        int top = cells[0].Position.y;
         for(int i = 0; i < cells.Length; i++)
         {
             if(cells[i].Position.y > top)
@@ -151,40 +141,18 @@ public class PieceData : ScriptableObject
         return new Vector2Int(0, -top - 1);
     }
 
-    private static bool CheckIsCentrified(ColoredCell[] cells)
+    private static bool CheckIsCentrified(Vector2 centerOfMass)
     {
-        bool result;
-
-        float totalMass = 0;
-        float totalX = 0;
-        float totalY = 0;
-
-        foreach (var c in cells)
-        {
-            totalMass++;
-
-            totalX += c.Position.x;
-            totalY += c.Position.y;
-        }
-
-        Vector2 centerMass = new Vector2(totalX / totalMass, totalY / totalMass);
-
-        if (centerMass.x % 1 == 0 && centerMass.y % 1 == 0)
-        {
-            result = true;
-        }
+        if (centerOfMass.x == 0)
+            return true;
         else
-        {
-            result = false;
-        }
-
-        return result;
+            return false;
     }
 
     private static int CalculateWidth(ColoredCell[] cells)
     {
-        int xMin = 0;
-        int xMax = 0;
+        int xMin = cells[0].Position.x;
+        int xMax = cells[0].Position.x;
 
         foreach (var cell in cells)
         {
@@ -203,8 +171,8 @@ public class PieceData : ScriptableObject
 
     private static int CalculateHeight(ColoredCell[] cells)
     {
-        int yMin = 0;
-        int yMax = 0;
+        int yMin = cells[0].Position.y;
+        int yMax = cells[0].Position.y;
 
         foreach (var cell in cells)
         {
