@@ -53,7 +53,7 @@ public class PiecesEditorWindow : EditorWindow
                 for (int j = 0; j < 20; j++)
                 {
 
-                    Vector2Int cell = new Vector2Int(i - boolOffsetX, j - boolOffsetY);
+                    Vector2Int cell = new Vector2Int((i - boolOffsetX), (-j + boolOffsetY));
                     Vector2Int[] pieceCells = new Vector2Int[_tiles.Count];
 
                     for(int k = 0; k < _tiles.Count; k++)
