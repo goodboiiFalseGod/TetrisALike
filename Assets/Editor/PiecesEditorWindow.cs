@@ -152,10 +152,16 @@ public class PiecesEditorWindow : EditorWindow
             }            
         }
 
-
-        if(_pieceData != null)
+        if (GUI.Button(new Rect(off * 5 - 4f, off * 20 + topOffset * 2.2f, off * 3, off), "Clear"))
         {
-            if (GUI.Button(new Rect(off - 4f, off *20 + topOffset * 2.2f, off * 5, off), "Save"))
+            _pieceData = null;
+            _name = string.Empty;
+            _tiles = new List<PieceData.ColoredCell>();
+        }
+
+        if (_pieceData != null)
+        {
+            if (GUI.Button(new Rect(off - 4f, off *20 + topOffset * 2.2f, off * 3, off), "Save"))
             {
                 if (_pieceData != null)
                 {
@@ -167,7 +173,7 @@ public class PiecesEditorWindow : EditorWindow
 
         if(_pieceData == null)
         {
-            if (GUI.Button(new Rect(off - 4f, off * 20 + topOffset * 2.2f, off * 5, off), "Save as"))
+            if (GUI.Button(new Rect(off - 4f, off * 20 + topOffset * 2.2f, off * 3, off), "Save as"))
             {
                 if (_tiles != null && _tiles.Count != 0 && _name != string.Empty)
                 {
