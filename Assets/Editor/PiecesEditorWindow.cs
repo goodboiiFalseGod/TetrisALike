@@ -133,7 +133,8 @@ public class PiecesEditorWindow : EditorWindow
 
                     if (k == _activeTileIndex)
                     {
-                        GUI.Button(new Rect(i * off + off * 13, j * off + topOffset * 2, 25, 25), _palette[k].GetComponent<SpriteRenderer>().sprite.texture);
+                        GUI.DrawTexture(new Rect(i * off + off * 13, j * off + topOffset * 2, 40, 40), _palette[k].GetComponent<SpriteRenderer>().sprite.texture);
+                        GUI.Button(new Rect(i * off + off * 13 + 5, j * off + topOffset * 2 + 5, 30, 30), _palette[k].GetComponent<SpriteRenderer>().sprite.texture);
                     }
                     else
                     {
