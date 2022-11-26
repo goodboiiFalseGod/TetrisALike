@@ -1,12 +1,9 @@
-using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class CustomTilemap : MonoBehaviour
 {
     [SerializeField] public RectInt Size;
-
     [SerializeField] private Dictionary<Vector2Int,Cell> _cells = new Dictionary<Vector2Int,Cell>();
 
     private void Start()
@@ -100,6 +97,7 @@ public class CustomTilemap : MonoBehaviour
         return Size.Contains(pos);
     }
 
+    //Review Чо с ебалом (неймингом)?
     private class Cell
     {
         public GameObject tile;

@@ -54,7 +54,7 @@ public class Ghost : MonoBehaviour
         {
             position.y = row;
 
-            if (_mainBoard.IsValidPosition(_trackingPiece, (Vector2Int)position)) {
+            if (_mainBoard.IsValidPosition((Vector2Int)position, _trackingPiece.Cells)) {
                 this.position = position;
             } else {
                 break;

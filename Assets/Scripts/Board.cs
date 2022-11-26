@@ -1,12 +1,13 @@
 using UnityEngine;
-using UnityEngine.Tilemaps;
 using DG.Tweening;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
 public class Board : MonoBehaviour
 {
+    //Review 
+    //1. Убрать публичные методы, там где не нужны
+    
     [SerializeField] private CustomTilemap _tilemap;
     [SerializeField] private Piece _activePiece;
     [SerializeField] private ScoreManager _scoreManager;
@@ -16,16 +17,14 @@ public class Board : MonoBehaviour
     [SerializeField] private Vector2Int _boardSize = new Vector2Int(10, 20);
 
     private Vector2Int _top;
-
-    private List<Vector2Int> _activePieceCells = new List<Vector2Int>();
-
     private PieceData _nextPiece;
 
-    public PieceData NextPiece { get => _nextPiece; }
+    public PieceData NextPiece => _nextPiece;
+    public Vector2Int BoardSize => _boardSize;
 
-    public Vector2Int BoardSize { get => _boardSize; }
-
-    public RectInt Bounds {
+    //Review 
+    //Заменить проперти на поле
+    private RectInt Bounds {
         get
         {
             Vector2Int position = new Vector2Int(-_boardSize.x / 2, -_boardSize.y / 2);
@@ -41,19 +40,13 @@ public class Board : MonoBehaviour
         _showNextPiece.UpdatePreview();
     }
 
-    public PieceData ChooseNextPiece()
-    {
-        int random = Random.Range(0, _tetrominoes.Length);
-        PieceData data = _tetrominoes[random];
-
-        return data;
-    }
+    private PieceData ChooseNextPiece() => _tetrominoes[Random.Range(0, _tetrominoes.Length)];
 
     public void SpawnPiece()
     {
         _activePiece.Initialize(this, _nextPiece.SpawnPositionOffset + _top, _nextPiece);
 
-        if (IsValidPosition(_activePiece, _nextPiece.SpawnPositionOffset + _top)) {
+        if (IsValidPosition(_nextPiece.SpawnPositionOffset + _top, _activePiece.Cells)) {
             Set(_activePiece);
         } else {
             GameOver();
@@ -63,11 +56,11 @@ public class Board : MonoBehaviour
         _showNextPiece.UpdatePreview();
     }
 
-    public void SpawnPiece(PieceData data)
+    private void SpawnPiece(PieceData data)
     {
         _activePiece.Initialize(this, data.SpawnPositionOffset + _top, data);
 
-        if (IsValidPosition(_activePiece, data.SpawnPositionOffset + _top))
+        if (IsValidPosition(data.SpawnPositionOffset + _top, _activePiece.Cells))
         {
             Set(_activePiece);
         }
@@ -83,14 +76,14 @@ public class Board : MonoBehaviour
         _scoreManager.GameOver();
     }
 
+    //Review
+    //Поменять параметр на IEnumerable<PieceData.ColoredCell> coloredCells
     public void Set(Piece piece)
     {
-        _activePieceCells.Clear();
-        for (int i = 0; i < piece.Cells.Length; i++)
+        foreach (PieceData.ColoredCell cell in piece.Cells)
         {
-            Vector2Int tilePosition = piece.Cells[i].Position + piece.Position;
-            _tilemap.SetTile(tilePosition, piece.PieceData.Tiles[i].Tile);
-            _activePieceCells.Add((Vector2Int)tilePosition);
+            Vector2Int tilePosition = cell.Position + piece.Position;
+            _tilemap.SetTile(tilePosition, cell.Tile);
         }
     }
 
@@ -101,29 +94,26 @@ public class Board : MonoBehaviour
             Vector2Int tilePosition = piece.Cells[i].Position + piece.Position;
             if(_tilemap.HasTile(tilePosition))
             {
-                _tilemap.ClearCell((Vector2Int)tilePosition);
+                _tilemap.ClearCell(tilePosition);
             }
         }
     }
 
-    public bool IsValidPosition(Piece piece, Vector2Int position)
+    public bool IsValidPosition(Vector2Int position, IEnumerable<PieceData.ColoredCell> coloredCells)
     {
         RectInt bounds = Bounds;
 
-        for (int i = 0; i < piece.Cells.Length; i++)
+        foreach (PieceData.ColoredCell coloredCell in coloredCells)
         {
-            Vector2Int tilePosition = piece.Cells[i].Position + position;
+            Vector2Int tilePosition = coloredCell.Position + position;
 
-            if (!bounds.Contains((Vector2Int)tilePosition)) {
+            if (!bounds.Contains(tilePosition))
                 return false;
-            }
 
-
-            if (_tilemap.HasTile((Vector2Int)tilePosition)) {
+            if (_tilemap.HasTile(tilePosition))
                 return false;
-            }
         }
-
+        
         return true;
     }
 
@@ -135,29 +125,26 @@ public class Board : MonoBehaviour
 
         for (int row = bounds.yMax; row >= bounds.yMin; row--)
         {
-            if (IsLineFull(row))
-            {
-                toClear.Add(row);
-                linesCleared++;
-            }
+            if (!IsLineFull(row)) continue;
+            
+            toClear.Add(row);
+            linesCleared++;
         }
 
-        if(linesCleared > 0)
-        {
-            AnimateClear(toClear);
-            _scoreManager.AddScore(linesCleared);
-        }
+        if (linesCleared <= 0) return;
+        
+        AnimateClear(toClear);
+        _scoreManager.AddScore(linesCleared);
     }
 
-    public bool IsLineFull(int row)
+    private bool IsLineFull(int row)
     {
-        RectInt bounds = Bounds;
-
-        for (int column = bounds.xMin; column < bounds.xMax; column++)
+        for (int column = Bounds.xMin; column < Bounds.xMax; column++)
         {
-            Vector3Int position = new Vector3Int(column, row, 0);
+            Vector2Int position = new Vector2Int(column, row);
 
-            if (!_tilemap.HasTile((Vector2Int)position)) {
+            if (!_tilemap.HasTile(position))
+            {
                 return false;
             }
         }
@@ -169,11 +156,13 @@ public class Board : MonoBehaviour
     {
         Sequence sequence = DOTween.Sequence();
 
-        foreach(int r in rows)
+        foreach(int row in rows)
         {
             for (int col = _tilemap.Size.xMin; col < _tilemap.Size.xMax; col++)
             {
-                Vector2Int position = new Vector2Int(col, r);
+                Vector2Int position = new Vector2Int(col, row);
+                //Review
+                // ВЫЗОВ ГЕТ КОМПОНЕНТ В ДВОЙНОМ ЦИКЛЕ?!?!??!?!?!?!?!?!?!?!
                 sequence.Join(_tilemap.GetTile(position).GetComponent<SpriteRenderer>().DOFade(0f, 0.5f));
             }
         }
@@ -182,37 +171,32 @@ public class Board : MonoBehaviour
     }
 
 
-    public void ClearLine(List<int> rows)
+    //Review
+    //Вынести основную логику в отдельный метод
+    private void ClearLine(List<int> rows)
     {
-        for (int i = 0; i < rows.Count; i++)
+        foreach (int rowIndex in rows)
         {
-            int row = rows[i];
-
-            while (row < _tilemap.Size.yMax)
+            for (int row = rowIndex; row < _tilemap.Size.yMax; row++)
             {
                 for (int col = _tilemap.Size.xMin; col < _tilemap.Size.xMax; col++)
                 {
                     Vector2Int position = new Vector2Int(col, row + 1);
+                    Vector2Int newPosition = new Vector2Int(col, row);
+                    
+                    if (_activePiece.Cells
+                        .Select(cell => cell.Position + _activePiece.Position)
+                        .Contains(position)) continue;
 
-                    if (_activePieceCells.Contains(position))
+                    if (!_tilemap.HasTile(position))
                     {
+                        _tilemap.ClearCell(newPosition);
                         continue;
                     }
 
-                    if (_tilemap.HasTile(position))
-                    {
-                        Vector2Int newPosition = new Vector2Int(col, row);
-                        _tilemap.ReplaceTile(newPosition, _tilemap.GetTile(position));
-                        _tilemap.ClearCell(position);
-                    }
-                    else
-                    {
-                        position = new Vector2Int(col, row);
-                        _tilemap.ClearCell(position);
-                    }
+                    _tilemap.ClearCell(position);
+                    _tilemap.ReplaceTile(newPosition, _tilemap.GetTile(position));
                 }
-
-                row++;
             }
         }
     }
